@@ -2,7 +2,9 @@ package de.bentzin.hoever;
 
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.interactions.InteractionHook;
 import net.dv8tion.jda.api.requests.restaction.MessageCreateAction;
+import net.dv8tion.jda.api.requests.restaction.interactions.ReplyCallbackAction;
 import org.jetbrains.annotations.NotNull;
 
 
@@ -20,14 +22,26 @@ public class CommandListener extends ListenerAdapter {
 
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
-        String[] scrape1 = Bot.webHandler.scrape();
-        String scrape = Arrays.toString(scrape1);
-        logger.info("Error#1: " + scrape);
-        if(scrape.length() > 2000) {
-            event.reply("Error #1").queue();
+        logger.info(event.getUser().getName() + ": " + event.getCommandString());
+        if(event.getName().equals("raw")) {
+            String[] scrape1 = Bot.webHandler.scrape();
+            String scrape = Arrays.toString(scrape1);
+            logger.info("Error#1: " + scrape);
+            if(scrape.length() > 2000) {
+                event.reply("Error #1").queue();
 
-            return;
+                return;
+            }
+            event.reply(scrape).queue();
+        } else if (event.getName().equals("update"))
+        {
+            logger.info("update triggered by command");
+            ReplyCallbackAction replyCallbackAction = event.deferReply();
+            replyCallbackAction.queue();
+            int i = Bot.runCheck();
+            event.getHook().editOriginal("Found " + i + " new uploads!").queue();
+
         }
-        event.reply(scrape).queue();
+
     }
 }
