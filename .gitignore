@@ -37,3 +37,4 @@ build/
 ### Mac OS ###
 .DS_Store
 data.json
+bin/cmake-build-debug/cHoever.ini
