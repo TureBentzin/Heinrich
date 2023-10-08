@@ -67,7 +67,7 @@ build bin.exe: CXX_EXECUTABLE_LINKER__bin_Debug CMakeFiles/bin.dir/main.cpp.obj
   FLAGS = -g
   LINK_LIBRARIES = -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
   OBJECT_DIR = CMakeFiles\bin.dir
-  POST_BUILD = cd .
+  POST_BUILD = cmd.exe /C "cd /D "E:\WorkSpace\Ich versuche es nochmal\Ich versuche es nochmal\WORKSPACE 2020\Hoever\bin\cmake-build-debug" && C:\Users\tureb\AppData\Local\Programs\CLion\bin\cmake\win\x64\bin\cmake.exe -E copy "E:/WorkSpace/Ich versuche es nochmal/Ich versuche es nochmal/WORKSPACE 2020/Hoever/bin/cmake-build-debug/bin.exe" "E:/WorkSpace/Ich versuche es nochmal/Ich versuche es nochmal/WORKSPACE 2020/Hoever/bin/cmake-build-debug/cHoever.exe" && cd /D "E:\WorkSpace\Ich versuche es nochmal\Ich versuche es nochmal\WORKSPACE 2020\Hoever\bin\cmake-build-debug" && C:\Users\tureb\AppData\Local\Programs\CLion\bin\cmake\win\x64\bin\cmake.exe -E copy "E:/WorkSpace/Ich versuche es nochmal/Ich versuche es nochmal/WORKSPACE 2020/Hoever/bin/cmake-build-debug/bin.exe" "E:/WorkSpace/Ich versuche es nochmal/Ich versuche es nochmal/WORKSPACE 2020/Hoever/bin/cmake-build-debug/../out/cHoever.exe""
   PRE_LINK = cd .
   TARGET_FILE = bin.exe
   TARGET_IMPLIB = libbin.dll.a

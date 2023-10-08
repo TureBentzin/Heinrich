@@ -48,11 +48,12 @@ int main() {
     std::string token = readConfigToken(configFilePath, "YourTokenKey");
 
     if (!token.empty()) {
-        std::string command = "java -jar ..\\target\\Hoever-1.0-SNAPSHOT.jar " + token;
+        std::string command = R"(java -jar ..\..\target\Hoever-1.0-SNAPSHOT.jar )" + token;
         system(command.c_str());
     } else {
         std::cout << "Token not found in config." << std::endl;
     }
+    system("PAUSE");
 
     return 0;
 }
