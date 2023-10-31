@@ -1,13 +1,19 @@
 package de.bentzin.hoever;
 
+import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.entities.MessageEmbed;
+import net.dv8tion.jda.api.events.interaction.GenericInteractionCreateEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.interactions.Interaction;
 import net.dv8tion.jda.api.interactions.InteractionHook;
+import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.requests.restaction.MessageCreateAction;
 import net.dv8tion.jda.api.requests.restaction.interactions.ReplyCallbackAction;
 import org.jetbrains.annotations.NotNull;
 
 
+import java.awt.*;
 import java.util.Arrays;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
@@ -19,6 +25,10 @@ import java.util.logging.Logger;
 public class CommandListener extends ListenerAdapter {
 
     private final Logger logger = Logger.getLogger("Command");
+
+    public boolean admin(GenericInteractionCreateEvent event) {
+        return event.getInteraction().getUser().getIdLong() == Bot.getConfiguration().admin();
+    }
 
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
@@ -40,6 +50,18 @@ public class CommandListener extends ListenerAdapter {
             replyCallbackAction.queue();
             int i = Bot.runCheck();
             event.getHook().editOriginal("Found " + i + " new uploads!").queue();
+
+        } else if (event.getName().equals("exit") && admin(event)) {
+            MessageEmbed sudo = new EmbedBuilder().setColor(Color.RED).setTitle("Admin / Debug").setDescription("The bot was marked for shutdown...").build();
+            event.replyEmbeds(sudo).queue();
+            Bot.getJda().shutdown();
+
+        }else if(event.getName().equals("fake") && admin(event) && Bot.getConfiguration().operationMode() == OperationMode.TESTING) {
+            OptionMapping url = event.getInteraction().getOption("url");
+            if(url != null){
+                event.reply("Creating fake data response...").queue();
+                Bot.announceNewFile(url.getAsString());
+            }
 
         }
 

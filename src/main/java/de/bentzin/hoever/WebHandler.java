@@ -9,7 +9,9 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.function.IntFunction;
 import java.util.function.Supplier;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
@@ -44,7 +46,13 @@ public class WebHandler {
         logger.info(homepage);
         long m2 = System.currentTimeMillis();
         logger.info("Found " + matchingSubstrings.length + " matches!");
-        return matchingSubstrings;
+        return Arrays.stream(matchingSubstrings).map(s -> s.substring(0, s.length() - 1)).toArray(new IntFunction<>() {
+            @NotNull
+            @Override
+            public String[] apply(int value) {
+                return new String[value];
+            }
+        });
     }
 
     @NotNull
