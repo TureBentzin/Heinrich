@@ -62,7 +62,7 @@ public class Bot {
             configuration = Configuration.configuration("https://www.fh-aachen.de/menschen/hoever/lehrveranstaltungen/hoehere-mathematik-1/wochenplaene-2023/24-hoehere-mathematik-1",
                     Pattern.compile("https://www\\.hoever-downloads\\.fh-aachen\\.de/[^\\s]+"),
                     351973117872046080L,
-                    OperationMode.TESTING);
+                    OperationMode.PRODUCTION);
         } catch (MalformedURLException e) {
             throw new RuntimeException(e);
         }
