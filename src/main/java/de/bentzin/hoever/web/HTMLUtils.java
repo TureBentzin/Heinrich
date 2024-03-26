@@ -1,7 +1,12 @@
 package de.bentzin.hoever.web;
 
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.io.*;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -12,6 +17,10 @@ import java.util.regex.Pattern;
  * @since 26-03-2024
  */
 public class HTMLUtils {
+
+    @NotNull
+    public static final Logger logger = LoggerFactory.getLogger(DataManager.class);
+
     public static List<DataBlock> extractDataBlocks(@NotNull String html) {
         List<DataBlock> dataBlocks = new ArrayList<>();
         Pattern pattern = Pattern.compile("<div class=\"largeText\">(.*?)</div>", Pattern.DOTALL);
@@ -48,14 +57,55 @@ public class HTMLUtils {
     }
 
     private static String extractTopic(@NotNull String blockContent) {
-        Pattern pattern = Pattern.compile("<li>(.*?)</li>", Pattern.DOTALL);
+        String topic = "";
+        Pattern pattern = Pattern.compile("<li>([0-9A-Za-z :.,\t]*?)<ul>", Pattern.DOTALL);
         Matcher matcher = pattern.matcher(blockContent);
         while (matcher.find()) {
             String topicCandidate = matcher.group(1);
             //further validation probably needed
+           // topic += " | " + topicCandidate;;
             return topicCandidate;
         }
-        return null;
+        return topic;
+    }
+
+    public static void main(String[] args) throws IOException {
+
+        InputStream downstream = new URL("https://www.fh-aachen.de/menschen/hoever/lehrveranstaltungen/hoehere-mathematik-1/wochenplaene-2023/24-hoehere-mathematik-1").openStream();
+        BufferedReader reader1 = new BufferedReader(new InputStreamReader(downstream));
+        String line;
+        StringBuilder event_file = new StringBuilder();
+        while ((line = reader1.readLine()) != null) {
+            event_file.append(line).append("\n");
+        }
+        String string = event_file.toString();
+
+        /*File file = new File("E:/WorkSpace/Ich versuche es nochmal/Ich versuche es nochmal/WORKSPACE 2020/Hoever/test-env/datatest/dataset.html");
+        FileReader reader = null;
+        try {
+            reader = new FileReader(file);
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+        StringBuilder builder = new StringBuilder();
+        int c;
+        try {
+            while ((c = reader.read()) != -1) {
+                builder.append((char) c);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        String string = builder.toString();
+        logger.info(string);
+
+         */
+        List<HTMLUtils.DataBlock> dataBlocks = HTMLUtils.extractDataBlocks(string);
+        for (HTMLUtils.DataBlock dataBlock : dataBlocks) {
+            logger.info("Topic: {}", dataBlock.getTopic());
+            logger.info(dataBlock.getNames().toString());
+            logger.info(dataBlock.getUrls().toString());
+        }
     }
 
     public static class DataBlock {
@@ -85,17 +135,6 @@ public class HTMLUtils {
         @NotNull
         public String getTopic() {
             return topic;
-        }
-    }
-
-
-    public static void main(String[] args) {
-
-        List<HTMLUtils.DataBlock> dataBlocks = HTMLUtils.extractDataBlocks();
-        for (HTMLUtils.DataBlock dataBlock : dataBlocks) {
-            logger.info("Topic: {}", dataBlock.getTopic());
-            logger.info(dataBlock.getNames().toString());
-            logger.info(dataBlock.getUrls().toString());
         }
     }
 }
