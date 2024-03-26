@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.time.Duration;
+import java.util.List;
 
 /**
  * @author Ture Bentzin
@@ -186,4 +187,5 @@ public class Bot {
         jda.shutdown();
         System.exit(code);
     }
+
 }

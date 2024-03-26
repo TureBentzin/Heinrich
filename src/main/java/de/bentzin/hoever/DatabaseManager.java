@@ -4,11 +4,12 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.sql.*;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /*
@@ -94,6 +95,25 @@ public class DatabaseManager {
             logger.info("Set channel {} for guild {} with event link {}", channelid, guildid, eventLink);
 
         } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @NotNull
+    public List<URL> getEvents() {
+        try (Connection connection = connect()) {
+
+            PreparedStatement preparedStatement = connection.prepareStatement("SELECT DISTINCT event_link FROM guilds");
+            ResultSet resultSet = preparedStatement.executeQuery();
+            ArrayList<URL> urls = new ArrayList<>();
+            while (resultSet.next()) {
+                urls.add(new URL(resultSet.getString("event_link")));
+            }
+
+            return urls;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        } catch (MalformedURLException e) {
             throw new RuntimeException(e);
         }
     }
