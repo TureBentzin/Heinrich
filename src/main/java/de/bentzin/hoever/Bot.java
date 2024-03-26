@@ -1,12 +1,21 @@
 package de.bentzin.hoever;
 
+import de.bentzin.hoever.command.ExitCommand;
+import de.bentzin.hoever.command.GCommandListener;
+import de.bentzin.hoever.command.SayCommand;
 import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.JDABuilder;
+import net.dv8tion.jda.api.entities.Activity;
+import net.dv8tion.jda.api.utils.TimeFormat;
+import net.dv8tion.jda.api.utils.cache.CacheFlag;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.Duration;
 
 /**
  * @author Ture Bentzin
@@ -26,13 +35,14 @@ public class Bot {
     @NotNull
     public static final Logger logger = LoggerFactory.getLogger(Bot.class);
     public static final Logger logger_hoever = LoggerFactory.getLogger("Prof. Dr. rer. nat. Dr.-Ing. Georg Hoever ");
-    /* Managers */
+    /* Managers (populated here or before bot start) */
     @NotNull
     private static final GsonManager gsonManager = new GsonManager();
+    private static final long session_start = System.currentTimeMillis();
     /* DEBUG */
     public static boolean debug = false;
-
-
+    @Nullable
+    private static DatabaseManager databaseManager;
     /* Objects populated on main */
     private static JDA jda;
     private static ConfigObject configObject;
@@ -47,7 +57,7 @@ public class Bot {
     public static void main(String[] args) {
         //https://www.slf4j.org/api/org/slf4j/simple/SimpleLogger.html
         logger_hoever.info("Willkommen zur Hoeheren Mathematik!");
-        String token;
+        String token = null;
         File config;
         if (args.length > 2 && args[2].equals("-d")) {
             debug = true;
@@ -68,6 +78,7 @@ public class Bot {
             if (!config.exists()) {
                 logger.error("{} does not exist!", config.getAbsolutePath());
                 createConfig(config);
+                logger.info("Please fill out the config file at {}. The application will shut down now!", config.getAbsolutePath());
                 System.exit(UNRECOVERABLE_ERROR);
             } else {
                 //config exists
@@ -81,6 +92,31 @@ public class Bot {
             }
         }
 
+        // continue bootstrap
+        databaseManager = new DatabaseManager(configObject.getSqlitePath());
+        logger.info("DatabaseManager was created successfully!");
+        {
+            //initial setup of the database
+            databaseManager.createTables();
+        }
+
+        /* Commands */
+        GCommandListener gCommandListener = new GCommandListener();
+
+        SayCommand sayCommand = new SayCommand();
+        gCommandListener.register(sayCommand);
+        gCommandListener.register(new ExitCommand());
+
+
+        //JDA Startup
+        {
+            JDABuilder jdaBuilder = JDABuilder.createDefault(token);
+            jdaBuilder.disableCache(CacheFlag.MEMBER_OVERRIDES, CacheFlag.VOICE_STATE);
+            jdaBuilder.setBulkDeleteSplittingEnabled(false).setActivity(Activity.competing("Höhere Mathematik 1.5"));
+            jdaBuilder.addEventListeners(gCommandListener);
+            jda = jdaBuilder.build();
+            gCommandListener.updateJDA(jda);
+        }
     }
 
     @NotNull
@@ -111,5 +147,33 @@ public class Bot {
     @NotNull
     public static GsonManager getGsonManager() {
         return gsonManager;
+    }
+
+    public static boolean isAdmin(long id) {
+        return configObject.getAdminIds().contains(id);
+    }
+
+    public static long getSessionDuration() {
+        return System.currentTimeMillis() - session_start;
+    }
+
+    @NotNull
+    public static String getSessionDurationString() {
+        return Utils.formatDuration(Duration.ofMillis(getSessionDuration()));
+    }
+
+    @NotNull
+    public static String getSessionStartTimeFormat() {
+        return TimeFormat.RELATIVE.format(session_start);
+    }
+
+    public static void shutdown() {
+        shutdown(NORMAL_EXIT);
+    }
+
+    public static void shutdown(int code) {
+        logger.info("Shutting down with exit code {} after session with length of {}", code, getSessionDurationString());
+        jda.shutdown();
+        System.exit(code);
     }
 }
