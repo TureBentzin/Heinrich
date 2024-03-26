@@ -15,6 +15,7 @@ public class ConfigObject {
     @NotNull
     private List<Long> adminIds;
 
+    @NotNull
     public static ConfigObject defaultConfig() {
         ConfigObject configObject = new ConfigObject();
         configObject.setSqlitePath("data.sqlite");

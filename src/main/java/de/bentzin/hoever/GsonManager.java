@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
 import java.io.IOException;
 
 /**
@@ -59,8 +60,13 @@ public class GsonManager {
     }
 
     public void toJson(@NotNull File file, @NotNull Object object) {
-        try {
-            gson.toJson(object, new java.io.FileWriter(file));
+
+        try (FileWriter fileWriter = new FileWriter(file);) {
+            gson.toJson(object, fileWriter);
+            if (Bot.debug) {
+                String json_copy = gson.toJson(object);
+                logger.info("Json: {}", json_copy);
+            }
         } catch (JsonIOException e) {
             logger.error("Gson failed fatally trying to write file {}!", file.getAbsolutePath());
             logger.error(e.getMessage(), e);
