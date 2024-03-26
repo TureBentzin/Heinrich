@@ -18,7 +18,7 @@ import java.util.Set;
 public class GCommandListener extends ListenerAdapter {
 
     @NotNull
-    public static final Logger logger = LoggerFactory.getLogger(GsonManager.class);
+    public static final Logger logger = LoggerFactory.getLogger(GCommandListener.class);
 
     @NotNull
     private final Set<GCommand> commandSet = new HashSet<>();

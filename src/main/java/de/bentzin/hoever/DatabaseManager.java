@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Set;
@@ -24,7 +25,7 @@ import java.util.Set;
 public class DatabaseManager {
 
     @NotNull
-    public static final Logger logger = LoggerFactory.getLogger(GsonManager.class);
+    public static final Logger logger = LoggerFactory.getLogger(DatabaseManager.class);
     @NotNull
     private final String sqlitePath;
 
@@ -72,6 +73,26 @@ public class DatabaseManager {
                                 url TEXT,
                                 PRIMARY KEY (channel, url)
                             );""");
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void setChannel(long guildid, long channelid, @NotNull String eventLink) {
+        //remove old channel and add new one
+        try (Connection connection = connect()) {
+            PreparedStatement statement = connection.prepareStatement("DELETE FROM guilds WHERE guildid = ? AND event_link = ?");
+            statement.setLong(1, guildid);
+            statement.setString(2, eventLink);
+            statement.execute();
+            logger.info("Deleted old channel for guild {} with event link {}", guildid, eventLink);
+            statement = connection.prepareStatement("INSERT INTO guilds (guildid, channel, event_link) VALUES (?, ?, ?)");
+            statement.setLong(1, guildid);
+            statement.setLong(2, channelid);
+            statement.setString(3, eventLink);
+            statement.execute();
+            logger.info("Set channel {} for guild {} with event link {}", channelid, guildid, eventLink);
+
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

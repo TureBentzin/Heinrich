@@ -1,8 +1,6 @@
 package de.bentzin.hoever;
 
-import de.bentzin.hoever.command.ExitCommand;
-import de.bentzin.hoever.command.GCommandListener;
-import de.bentzin.hoever.command.SayCommand;
+import de.bentzin.hoever.command.*;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
@@ -106,6 +104,8 @@ public class Bot {
         SayCommand sayCommand = new SayCommand();
         gCommandListener.register(sayCommand);
         gCommandListener.register(new ExitCommand());
+        if (debug) gCommandListener.register(new ConnectTestCommand());
+        gCommandListener.register(new SetChannelCommand());
 
 
         //JDA Startup
@@ -142,6 +142,16 @@ public class Bot {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Nullable
+    public static DatabaseManager getDatabaseManager() {
+        return databaseManager;
+    }
+
+    @NotNull
+    public static ConfigObject getConfig() {
+        return configObject;
     }
 
     @NotNull
