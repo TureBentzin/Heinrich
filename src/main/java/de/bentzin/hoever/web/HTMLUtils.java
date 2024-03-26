@@ -4,9 +4,10 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -63,14 +64,14 @@ public class HTMLUtils {
         while (matcher.find()) {
             String topicCandidate = matcher.group(1);
             //further validation probably needed
-           // topic += " | " + topicCandidate;;
+            // topic += " | " + topicCandidate;;
             return topicCandidate;
         }
         return topic;
     }
 
     public static void main(String[] args) throws IOException {
-
+/*
         InputStream downstream = new URL("https://www.fh-aachen.de/menschen/hoever/lehrveranstaltungen/hoehere-mathematik-1/wochenplaene-2023/24-hoehere-mathematik-1").openStream();
         BufferedReader reader1 = new BufferedReader(new InputStreamReader(downstream));
         String line;
@@ -80,7 +81,9 @@ public class HTMLUtils {
         }
         String string = event_file.toString();
 
-        /*File file = new File("E:/WorkSpace/Ich versuche es nochmal/Ich versuche es nochmal/WORKSPACE 2020/Hoever/test-env/datatest/dataset.html");
+ */
+
+        File file = new File("E:/WorkSpace/Ich versuche es nochmal/Ich versuche es nochmal/WORKSPACE 2020/Hoever/test-env/datatest/dataset.html");
         FileReader reader = null;
         try {
             reader = new FileReader(file);
@@ -99,7 +102,7 @@ public class HTMLUtils {
         String string = builder.toString();
         logger.info(string);
 
-         */
+
         List<HTMLUtils.DataBlock> dataBlocks = HTMLUtils.extractDataBlocks(string);
         for (HTMLUtils.DataBlock dataBlock : dataBlocks) {
             logger.info("Topic: {}", dataBlock.getTopic());
