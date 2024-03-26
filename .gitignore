@@ -41,3 +41,6 @@ data.json
 bin/cmake-build-debug/cHoever.ini
 bin/cmake-build-debug/cHoever.exe
 bin/out/cHoever.exe
+
+### Test Env ###
+test-env/
