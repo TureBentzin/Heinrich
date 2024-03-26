@@ -4,14 +4,26 @@
 
 
 const std::string CONFIG_FILE = "launcher.config";
-const std::string DEFAULT_CONFIG = ""
-                                   "token: enter_token_here;\n"
-                                   "bot_config: bot_config.json;\n"
-                                   "updater: 1;\n"
-                                   "git_repo: https://github.com/TureBentzin/1Hoever.git;\n"
-                                   "debug: 0;\n";
+const std::string DEFAULT_CONFIG =
+        "java_bin: java;\n"
+        "jar: 1Hoever.jar;\n"
+        "token: enter_token_here;\n"
+        "bot_config: bot_config.json;\n"
+        "updater: 1;\n"
+        "git_repo: https://github.com/TureBentzin/1Hoever.git;\n"
+        "bot_debug: 0;\n";
 
 bool debug = false;
+
+struct Config {
+    std::string java_bin;
+    std::string jar;
+    std::string token;
+    std::string bot_config;
+    bool updater = true;
+    std::string git_repo;
+    bool bot_debug = false;
+};
 
 int main(int argc, char **argv) {
 
@@ -21,16 +33,20 @@ int main(int argc, char **argv) {
             if (strcmp(argv[i], "-d") == 0) {
                 debug = true;
                 std::cout << "Debug mode enabled!" << std::endl << std::endl;
+                std::cout << "Running in debug mode will print the token to this console. This is a huge security risk!"
+                          << std::endl;
             }
         }
     }
 
-    std::cout << "Welcome to the 1Hoever Launcher!" <<
-              std::endl;
-    std::cout << "reading launcher configuration from file: " << CONFIG_FILE <<
-              std::endl;
+    std::cout << "Welcome to the 1Hoever Launcher!" << std::endl;
+    std::cerr << "This is an experimental launcher! Usage in production is not recommended!" << std::endl;
+    //flushall();
+    bool enable_updater = true;
+    restart:
+    std::cout << "reading launcher configuration from file: " << CONFIG_FILE << std::endl;
 // check if the file exists and is readable. if not, create it.
-
+    Config config = {};
     attempt_read_config:
     std::fstream file(CONFIG_FILE, std::ios::in | std::ios::out);
     if (!file.is_open()) {
@@ -38,14 +54,111 @@ int main(int argc, char **argv) {
         file.open(CONFIG_FILE, std::ios::out);
         file << DEFAULT_CONFIG << std::endl;
         file.close();
-        goto attempt_read_config;
+        std::cout << "file created, please fill in the configuration and restart the launcher!" << std::endl;
+        return 0;
     } else {
-        std::cout << "file found, reading contents" << std::endl;
+        std::cout << "file found, reading contents..." << std::endl;
         std::string line;
         while (std::getline(file, line)) {
-            std::cout << line << std::endl;
+            if (debug) std::cout << line << std::endl;
+            //parse the line
+            //token
+            if (line.find("token: ") != std::string::npos) {
+                config.token = line.substr(7, line.length() - 8);
+                if (debug) std::cout << "parsed: token: " << config.token << std::endl;
+            }
+            //bot_config
+            if (line.find("bot_config: ") != std::string::npos) {
+                config.bot_config = line.substr(12, line.length() - 13);
+                if (debug) std::cout << "parsed: bot_config: " << config.bot_config << std::endl;
+            }
+            //updater
+            if (line.find("updater: ") != std::string::npos) {
+                config.updater = line.substr(9, line.length() - 10) == "1";
+                if (debug) std::cout << "parsed: updater: " << config.updater << std::endl;
+            }
+            //git_repo
+            if (line.find("git_repo: ") != std::string::npos) {
+                config.git_repo = line.substr(10, line.length() - 11);
+                if (debug) std::cout << "parsed: git_repo: " << config.git_repo << std::endl;
+            }
+            //bot_debug
+            if (line.find("bot_debug: ") != std::string::npos) {
+                config.bot_debug = line.substr(11, line.length() - 12) == "1";
+                if (debug) std::cout << "parsed: bot_debug: " << config.bot_debug << std::endl;
+            }
+            //jar
+            if (line.find("jar: ") != std::string::npos) {
+                config.jar = line.substr(5, line.length() - 6);
+                if (debug) std::cout << "parsed: jar: " << config.jar << std::endl;
+            }
+            //java_bin
+            if (line.find("java_bin: ") != std::string::npos) {
+                config.java_bin = line.substr(10, line.length() - 11);
+                if (debug) std::cout << "parsed: java_bin: " << config.java_bin << std::endl;
+            }
         }
         file.close();
     }
+
+    std::cout << "Configuration read successfully!" << std::endl;
+    //if updater is enabled, download the latest sucessful build from the git repo
+    if (config.updater && enable_updater) {
+        std::cout << "updater is enabled, downloading latest build from: " << config.git_repo << std::endl;
+        std::cerr << "This feature is not yet implemented!" << std::endl;
+        //flushall();
+    }
+    //check if the jar file exists
+    std::fstream jar_file(config.jar, std::ios::in);
+    if (!config.jar.ends_with(".jar")) {
+        std::cout << "Jar file must end with .jar! Please make sure 1Hoever is installed correctly!" << std::endl;
+        return 1;
+    }
+    if (!jar_file.is_open()) {
+        std::cout << "Jar file not found! Please make sure 1Hoever is installed correctly!" << std::endl;
+        return 1;
+    }
+    jar_file.close();
+    std::cout << "Jar file found!" << std::endl;
+    //build command to run the jar file
+    std::string command = config.java_bin + " -jar " + config.jar + " " + config.token + " " + config.bot_config + " " +
+                          (config.bot_debug ? "-d" : "");
+    if (debug) std::cout << "running command: " << command << std::endl;
+    //run the command
+    int exit_code = system(command.c_str());
+    std::cout << "The bot has exited with exit code: " << exit_code << std::endl;
+    /*
+     * Exit codes of the bot:
+     * -1: unknown error (exit without restart)
+     * 0: normal exit (dont restart)
+     * 1: restart without update
+     * 2: restart with update
+     * 3: error (restart with update)
+     * 4 +: unrecoverable error (dont restart)
+     */
+    if (exit_code == 0) {
+        std::cout << "The bot has exited normally!" << std::endl;
+        return exit_code;
+    } else if (exit_code == 1) {
+        std::cout << "The bot has requested a restart without update!" << std::endl;
+        enable_updater = false;
+        goto restart;
+    } else if (exit_code == 2) {
+        std::cout << "The bot has requested a restart with update!" << std::endl;
+        enable_updater = true;
+        goto restart;
+    } else if (exit_code == 3) {
+        std::cout << "The bot has exited with an error and requested a restart!" << std::endl;
+        enable_updater = true;
+        goto restart;
+    } else if (exit_code == 4) {
+        std::cout << "The bot has exited with an unrecoverable error!" << std::endl;
+        return exit_code;
+    } else {
+        std::cout << "The bot has exited with an unknown error! (" << exit_code << ")" << std::endl;
+        return -1;
+    }
+
+
     return 0;
 }
