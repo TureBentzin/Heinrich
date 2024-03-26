@@ -44,20 +44,20 @@ int main(int argc, char **argv) {
     //flushall();
     bool enable_updater = true;
     restart:
-    std::cout << "reading launcher configuration from file: " << CONFIG_FILE << std::endl;
+    std::cout << "Reading launcher configuration from file: " << CONFIG_FILE << std::endl;
 // check if the file exists and is readable. if not, create it.
     Config config = {};
     attempt_read_config:
     std::fstream file(CONFIG_FILE, std::ios::in | std::ios::out);
     if (!file.is_open()) {
-        std::cout << "file not found, creating new file" << std::endl;
+        std::cout << "File not found, creating new file" << std::endl;
         file.open(CONFIG_FILE, std::ios::out);
         file << DEFAULT_CONFIG << std::endl;
         file.close();
-        std::cout << "file created, please fill in the configuration and restart the launcher!" << std::endl;
+        std::cout << "File created, please fill in the configuration and restart the launcher!" << std::endl;
         return 0;
     } else {
-        std::cout << "file found, reading contents..." << std::endl;
+        std::cout << "File found, reading contents..." << std::endl;
         std::string line;
         while (std::getline(file, line)) {
             if (debug) std::cout << line << std::endl;
@@ -104,7 +104,7 @@ int main(int argc, char **argv) {
     std::cout << "Configuration read successfully!" << std::endl;
     //if updater is enabled, download the latest sucessful build from the git repo
     if (config.updater && enable_updater) {
-        std::cout << "updater is enabled, downloading latest build from: " << config.git_repo << std::endl;
+        std::cout << "Updater is enabled, downloading latest build from: " << config.git_repo << std::endl;
         std::cerr << "This feature is not yet implemented!" << std::endl;
         //flushall();
     }
@@ -123,7 +123,7 @@ int main(int argc, char **argv) {
     //build command to run the jar file
     std::string command = config.java_bin + " -jar " + config.jar + " " + config.token + " " + config.bot_config + " " +
                           (config.bot_debug ? "-d" : "");
-    if (debug) std::cout << "running command: " << command << std::endl;
+    if (debug) std::cout << "Running command: " << command << std::endl;
     //run the command
     int exit_code = system(command.c_str());
     std::cout << "The bot has exited with exit code: " << exit_code << std::endl;
