@@ -5,11 +5,6 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -24,6 +19,7 @@ public class HTMLUtils {
     @NotNull
     public static final Logger logger = LoggerFactory.getLogger(DataManager.class);
 
+    @NotNull
     public static List<DataBlock> extractDataBlocks(@NotNull String html) {
         List<DataBlock> dataBlocks = new ArrayList<>();
         Pattern pattern = Pattern.compile("<header>.*?<h2 class=\"\">.*?:(.*?)</h2>.*?</header>.*?<div class=\"(shortText|largeText)\">(.*?)</div>", Pattern.DOTALL);
@@ -43,6 +39,7 @@ public class HTMLUtils {
 
     //"<a[ ]*href=\"https://(.*?)\".*?>([A-ZÄ-Üa-z0-9 .:-]*)</a>"gs
     //url,name
+    @NotNull
     public static List<Pair<String, String>> extractNamesAndUrls(@NotNull String blockContent) {
         List<Pair<String, String>> namesAndUrls = new ArrayList<>();
         //"<a[ ]*href=\"https://(.*?)\".*?>([A-ZÄ-Üa-z0-9 .:-]*)</a>"gs
@@ -65,6 +62,8 @@ public class HTMLUtils {
             // topic += " | " + topicCandidate;;
             return topicCandidate;
         }
+
+
         return topic;
     }
 
