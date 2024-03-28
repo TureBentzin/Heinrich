@@ -42,26 +42,6 @@ public class HTMLUtils {
         return dataBlocks;
     }
 
-    private static List<String> extractUrls(@NotNull String blockContent) {
-        List<String> urls = new ArrayList<>();
-        Pattern pattern = Pattern.compile("<a\\s+href=\"([^\"]*)\"", Pattern.CASE_INSENSITIVE);
-        Matcher matcher = pattern.matcher(blockContent);
-        while (matcher.find()) {
-            urls.add(matcher.group(1));
-        }
-        return urls;
-    }
-
-    private static List<String> extractNames(@NotNull String blockContent) {
-        List<String> names = new ArrayList<>();
-        Pattern pattern = Pattern.compile("<a[ ]*href=\"https://.*?\".*?>([A-ZÄ-Üa-z0-9 .:-]*)</a>", Pattern.MULTILINE | Pattern.DOTALL);
-        Matcher matcher = pattern.matcher(blockContent);
-        while (matcher.find()) {
-            names.add(matcher.group(1));
-        }
-        return names;
-    }
-
     //"<a[ ]*href=\"https://(.*?)\".*?>([A-ZÄ-Üa-z0-9 .:-]*)</a>"gs
     //url,name
     public static List<Pair<String, String>> extractNamesAndUrls(@NotNull String blockContent) {
