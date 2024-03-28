@@ -1,6 +1,6 @@
 package de.bentzin.hoever.command;
 
-import de.bentzin.hoever.GsonManager;
+import de.bentzin.hoever.Bot;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -35,7 +35,15 @@ public class GCommandListener extends ListenerAdapter {
         for (GCommand gCommand : commandSet) {
             if (gCommand.getName().equals(name)) {
                 logger.info("{} executed command {} in {}", event.getUser().getName(), name, event.getChannel().getName());
-                gCommand.callCommand(event);
+                try {
+                    gCommand.callCommand(event);
+                } catch (Exception e) {
+                    logger.error("Error while executing command {}", name);
+                    logger.error("Error: ", e);
+                    event.getInteraction().getHook().editOriginal("An error occurred while executing the command! I will restart. You can try to execute the command again after im online again!").queue();
+                    Bot.shutdown(Bot.RESTART_ERROR);
+                }
+
                 return;
             }
         }
@@ -44,4 +52,6 @@ public class GCommandListener extends ListenerAdapter {
     public void updateJDA(@NotNull JDA jda) {
         jda.updateCommands().addCommands(commandSet.stream().map(GCommand::getCommandData).toList()).queue();
     }
+
+
 }

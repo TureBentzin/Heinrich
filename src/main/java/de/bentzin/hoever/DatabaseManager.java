@@ -159,10 +159,35 @@ public class DatabaseManager {
     @NotNull
     public Set<SendOrder> getSendOrders() {
         try (Connection connection = connect()) {
-            PreparedStatement preparedStatement = connection.prepareStatement("SELECT channel, url, event, messageID FROM history");
+            PreparedStatement preparedStatement = connection.prepareStatement("SELECT guilds.channel, guilds.event_link, files.url, files.event, files.name, files.topic FROM files, guilds\n" +
+                    "WHERE guilds.event_link == files.event AND (guilds.channel, files.url, files.event) NOT IN (SELECT channel, url, event FROM history)");
             ResultSet resultSet = preparedStatement.executeQuery();
             Set<SendOrder> sendOrders = new HashSet<>();
+            while (resultSet.next()) {
+                sendOrders.add(new SendOrder(
+                        resultSet.getString("url"),
+                        resultSet.getString("name"),
+                        resultSet.getString("topic"),
+                        resultSet.getString("event"),
+                        resultSet.getLong("channel")));
+                logger.debug("Added send order for channel {} with event {} and url {}", resultSet.getLong("channel"), resultSet.getString("event"), resultSet.getString("url"));
+            }
             return sendOrders;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @NotNull
+    public Set<DBChannel> getChannels() {
+        try (Connection connection = connect()) {
+            PreparedStatement preparedStatement = connection.prepareStatement("SELECT guildid, channel, event_link FROM guilds");
+            ResultSet resultSet = preparedStatement.executeQuery();
+            Set<DBChannel> channels = new HashSet<>();
+            while (resultSet.next()) {
+                channels.add(new DBChannel(resultSet.getLong("guildid"), resultSet.getLong("channel"), resultSet.getString("event_link")));
+            }
+            return channels;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

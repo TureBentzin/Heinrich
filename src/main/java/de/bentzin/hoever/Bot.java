@@ -1,7 +1,7 @@
 package de.bentzin.hoever;
 
 import de.bentzin.hoever.command.*;
-import jdk.jfr.Experimental;
+import de.bentzin.hoever.web.DataManager;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
@@ -15,7 +15,6 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.time.Duration;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
@@ -49,6 +48,9 @@ public class Bot {
     private static JDA jda;
     @Nullable
     private static ConfigObject configObject;
+
+    @Nullable
+    private static DataManager dataManager;
 
     /**
      * Entrypoint of application
@@ -103,12 +105,16 @@ public class Bot {
             databaseManager.createTables();
         }
 
+        dataManager = new DataManager();
+        logger.info("DataManager was created successfully!");
+
         /* Commands */
         GCommandListener gCommandListener = new GCommandListener();
 
         SayCommand sayCommand = new SayCommand();
         gCommandListener.register(sayCommand);
         gCommandListener.register(new ExitCommand());
+        gCommandListener.register(new UpdateCommand());
         if (debug) gCommandListener.register(new ConnectTestCommand());
         gCommandListener.register(new SetChannelCommand());
 
@@ -212,4 +218,8 @@ public class Bot {
         return fallback;
     }
 
+    @Nullable
+    public static DataManager getDataManager() {
+        return dataManager;
+    }
 }

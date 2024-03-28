@@ -12,15 +12,14 @@ public class Item {
     private String name;
     @NotNull
     private String link;
+    @Nullable
+    private String topic;
 
-    public Item(@NotNull String name, @NotNull String link, @Nullable String topic) {
+    public Item(@NotNull String topic, @NotNull String link, @Nullable String name) {
         this.name = name;
         this.link = link;
         this.topic = topic;
     }
-
-    @Nullable
-    private String topic;
 
     @NotNull
     public String getName() {

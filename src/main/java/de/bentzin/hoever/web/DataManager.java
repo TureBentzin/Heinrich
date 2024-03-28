@@ -1,6 +1,8 @@
 package de.bentzin.hoever.web;
 
 import de.bentzin.hoever.Bot;
+import de.bentzin.hoever.DBChannel;
+import de.bentzin.hoever.SendOrder;
 import kotlin.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -31,7 +33,11 @@ public class DataManager {
 
     }
 
-    public void update() {
+    /**
+     *
+     * @return number of messages sent
+     */
+    public int update() {
         //Eventlink, File
         Map<String, String> index = new HashMap<>();
         for (URL event : Bot.getDatabaseManager().getEvents()) {
@@ -62,9 +68,15 @@ public class DataManager {
         logger.info("Updating database");
         Bot.getDatabaseManager().updateFileItems(items);
         logger.info("Database updated");
-        logger.info("Comparing items with history and sending messages");
+        logger.info("Retrieving channels from database");
+        Set<DBChannel> channels = Bot.getDatabaseManager().getChannels();
+        logger.info("Retrieved {} channels", channels.size());
+        logger.info("Determining sendorders from history and guilds");
 
+        //Wir benötigen: Channel, URL, Event
+        Set<SendOrder> sendOrder = Bot.getDatabaseManager().getSendOrders();
 
+        return 0;
     }
 
     @NotNull
