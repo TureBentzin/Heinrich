@@ -68,28 +68,6 @@ public class HTMLUtils {
         return topic;
     }
 
-    public static void main(String[] args) throws IOException {
-//testset: Mathe1 : https://www.fh-aachen.de/menschen/hoever/lehrveranstaltungen/hoehere-mathematik-1/wochenplaene-2023/24-hoehere-mathematik-1
-        //Mathe 2 https://www.fh-aachen.de/menschen/hoever/lehrveranstaltungen/hoehere-mathematik-2-fuer-informatik-und-wirtschaftsinformatik/wochenplaene-24-hoehere-mathematik-2-fuer-wirtschafts-informatik"
-        InputStream downstream = new URL("https://www.fh-aachen.de/menschen/hoever/lehrveranstaltungen/hoehere-mathematik-2-fuer-informatik-und-wirtschaftsinformatik/wochenplaene-24-hoehere-mathematik-2-fuer-wirtschafts-informatik").openStream();
-        BufferedReader reader1 = new BufferedReader(new InputStreamReader(downstream));
-        String line;
-        StringBuilder event_file = new StringBuilder();
-        while ((line = reader1.readLine()) != null) {
-            event_file.append(line).append("\n");
-        }
-        String string = event_file.toString();
-
-        //logger.info(string);
-
-
-        List<HTMLUtils.DataBlock> dataBlocks = HTMLUtils.extractDataBlocks(string);
-        for (HTMLUtils.DataBlock dataBlock : dataBlocks) {
-            logger.info("Topic: {}", dataBlock.getTopic());
-            logger.info(dataBlock.getContent().toString());
-        }
-    }
-
     public static class DataBlock {
         @NotNull
         private final String topic;
