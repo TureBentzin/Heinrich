@@ -26,12 +26,15 @@ public class HTMLUtils {
 
     public static List<DataBlock> extractDataBlocks(@NotNull String html) {
         List<DataBlock> dataBlocks = new ArrayList<>();
-        Pattern pattern = Pattern.compile("<div class=\"(shortText|largeText)\">(.*?)</div>", Pattern.DOTALL);
+        Pattern pattern = Pattern.compile("<header>.*?<h2 class=\"\">.*?:(.*?)</h2>.*?</header>.*?<div class=\"(shortText|largeText)\">(.*?)</div>", Pattern.DOTALL);
         Matcher matcher = pattern.matcher(html);
         while (matcher.find()) {
-            String blockContent = matcher.group(2);
+            String blockContent = matcher.group(3);
+            String header = matcher.group(1);
+            logger.info("Header: {}", header);
+            logger.info("Block: {}", blockContent);
             List<Pair<String, String>> urlsAndNames = extractNamesAndUrls(blockContent);
-            String topic = extractTopic(blockContent);
+            String topic = matcher.group(1).replace("\n", "");
             DataBlock dataBlock = new DataBlock(urlsAndNames, topic);
             dataBlocks.add(dataBlock);
         }
@@ -43,7 +46,7 @@ public class HTMLUtils {
     public static List<Pair<String, String>> extractNamesAndUrls(@NotNull String blockContent) {
         List<Pair<String, String>> namesAndUrls = new ArrayList<>();
         //"<a[ ]*href=\"https://(.*?)\".*?>([A-ZÄ-Üa-z0-9 .:-]*)</a>"gs
-        Pattern pattern = Pattern.compile("<a[ ]*href=\"https://(.*?)\".*?>([A-ZÄ-Üa-z0-9 .:-]*)</a>", Pattern.MULTILINE | Pattern.DOTALL);
+        Pattern pattern = Pattern.compile("<a[ ]*href=\"(https://.*?)\".*?>([A-ZÄ-Üä-üa-z0-9 .:-]*)</a>", Pattern.MULTILINE | Pattern.DOTALL);
         Matcher matcher = pattern.matcher(blockContent);
         while (matcher.find()) {
             namesAndUrls.add(new Pair<>(matcher.group(1), matcher.group(2)));
@@ -53,7 +56,8 @@ public class HTMLUtils {
 
     private static String extractTopic(@NotNull String blockContent) {
         String topic = "";
-        Pattern pattern = Pattern.compile("<li>([0-9A-Za-z :.,\t]*?)<ul>", Pattern.DOTALL);
+        blockContent = blockContent.replace("\n", "");
+        Pattern pattern = Pattern.compile("<h2 class=\"\">.*?:(.*?)</h2>", Pattern.DOTALL); //big header
         Matcher matcher = pattern.matcher(blockContent);
         while (matcher.find()) {
             String topicCandidate = matcher.group(1);
@@ -66,6 +70,7 @@ public class HTMLUtils {
 
     public static void main(String[] args) throws IOException {
 //testset: Mathe1 : https://www.fh-aachen.de/menschen/hoever/lehrveranstaltungen/hoehere-mathematik-1/wochenplaene-2023/24-hoehere-mathematik-1
+        //Mathe 2 https://www.fh-aachen.de/menschen/hoever/lehrveranstaltungen/hoehere-mathematik-2-fuer-informatik-und-wirtschaftsinformatik/wochenplaene-24-hoehere-mathematik-2-fuer-wirtschafts-informatik"
         InputStream downstream = new URL("https://www.fh-aachen.de/menschen/hoever/lehrveranstaltungen/hoehere-mathematik-2-fuer-informatik-und-wirtschaftsinformatik/wochenplaene-24-hoehere-mathematik-2-fuer-wirtschafts-informatik").openStream();
         BufferedReader reader1 = new BufferedReader(new InputStreamReader(downstream));
         String line;
@@ -75,7 +80,7 @@ public class HTMLUtils {
         }
         String string = event_file.toString();
 
-        logger.info(string);
+        //logger.info(string);
 
 
         List<HTMLUtils.DataBlock> dataBlocks = HTMLUtils.extractDataBlocks(string);
