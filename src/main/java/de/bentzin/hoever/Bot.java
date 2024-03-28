@@ -1,6 +1,7 @@
 package de.bentzin.hoever;
 
 import de.bentzin.hoever.command.*;
+import jdk.jfr.Experimental;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
@@ -14,7 +15,8 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.time.Duration;
-import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * @author Ture Bentzin
@@ -43,7 +45,9 @@ public class Bot {
     @Nullable
     private static DatabaseManager databaseManager;
     /* Objects populated on main */
+    @Nullable
     private static JDA jda;
+    @Nullable
     private static ConfigObject configObject;
 
     /**
@@ -182,10 +186,30 @@ public class Bot {
         shutdown(NORMAL_EXIT);
     }
 
-    public static void shutdown(int code) {
+    public static void shutdown(int code) throws IllegalStateException {
         logger.info("Shutting down with exit code {} after session with length of {}", code, getSessionDurationString());
         jda.shutdown();
         System.exit(code);
+        throw new IllegalStateException("JVM should be already exited!");
+    }
+
+
+    public static <R> @Nullable R accessJDA(@NotNull Function<JDA, R> action, @Nullable R fallback) {
+        if (jda == null) {
+            final StackWalker walker = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE);
+            final StackWalker.StackFrame frame = walker.walk(stackFrameStream -> stackFrameStream.findFirst().orElse(null));
+            final String frameInfo = frame == null ? "Unknown" : frame.getClassName() + "#" + frame.getMethodName();
+            logger.warn("JDA is not present (null). {} attempted to access but failed!", frameInfo);
+        } else {
+            try {
+                return action.apply(jda);
+            } catch (Exception e) {
+                logger.error("Error while accessing JDA!", e);
+                logger.error("Bot will exit and restart!");
+                shutdown(RESTART_ERROR);
+            }
+        }
+        return fallback;
     }
 
 }
