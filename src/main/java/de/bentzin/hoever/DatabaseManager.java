@@ -2,6 +2,7 @@ package de.bentzin.hoever;
 
 import de.bentzin.hoever.web.Item;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -160,7 +161,7 @@ public class DatabaseManager {
     public Set<SendOrder> getSendOrders() {
         try (Connection connection = connect()) {
             PreparedStatement preparedStatement = connection.prepareStatement("SELECT guilds.channel, guilds.event_link, files.url, files.event, files.name, files.topic FROM files, guilds\n" +
-                    "WHERE guilds.event_link == files.event AND (guilds.channel, files.url, files.event) NOT IN (SELECT channel, url, event FROM history)");
+                    "WHERE guilds.event_link == files.event AND (guilds.channel, files.url, files.event) NOT IN (SELECT channel, url, event FROM history) ORDER BY url DESC");
             ResultSet resultSet = preparedStatement.executeQuery();
             Set<SendOrder> sendOrders = new HashSet<>();
             while (resultSet.next()) {
@@ -188,6 +189,19 @@ public class DatabaseManager {
                 channels.add(new DBChannel(resultSet.getLong("guildid"), resultSet.getLong("channel"), resultSet.getString("event_link")));
             }
             return channels;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public @Nullable String getRandomTopic() {
+        try (Connection connection = connect()) {
+            PreparedStatement preparedStatement = connection.prepareStatement("SELECT DISTINCT topic FROM files ORDER BY RANDOM() LIMIT 1");
+            ResultSet resultSet = preparedStatement.executeQuery();
+            if (resultSet.next()) {
+                return resultSet.getString("topic");
+            }
+            return null;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

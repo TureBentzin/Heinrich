@@ -123,7 +123,17 @@ public class Bot {
         {
             JDABuilder jdaBuilder = JDABuilder.createDefault(token);
             jdaBuilder.disableCache(CacheFlag.MEMBER_OVERRIDES, CacheFlag.VOICE_STATE);
-            jdaBuilder.setBulkDeleteSplittingEnabled(false).setActivity(Activity.competing("Höhere Mathematik 1.5"));
+            String initialActivity = "Höhere Mathematik";
+            {
+                try {
+                    if (getDatabaseManager() != null) {
+                        initialActivity = getDatabaseManager().getRandomTopic();
+                    }
+                } catch (Exception e) {
+                    logger.warn("Failed to get random topic from database! Using default activity!");
+                }
+            }
+            jdaBuilder.setBulkDeleteSplittingEnabled(false).setActivity(Activity.competing(initialActivity));
             jdaBuilder.addEventListeners(gCommandListener);
             jda = jdaBuilder.build();
             gCommandListener.updateJDA(jda);
@@ -217,6 +227,7 @@ public class Bot {
         }
         return fallback;
     }
+
 
     @Nullable
     public static DataManager getDataManager() {
