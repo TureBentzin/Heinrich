@@ -79,30 +79,6 @@ public class HTMLUtils {
         }
         String string = event_file.toString();
 
- /*
-
-
-        File file = new File("E:/WorkSpace/Ich versuche es nochmal/Ich versuche es nochmal/WORKSPACE 2020/Hoever/test-env/datatest/dataset.html");
-        FileReader reader = null;
-        try {
-            reader = new FileReader(file);
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
-        }
-        StringBuilder builder = new StringBuilder();
-        int c;
-        try {
-            while ((c = reader.read()) != -1) {
-                builder.append((char) c);
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        String string = builder.toString();
-
-
-  */
-
         logger.info(string);
 
 
