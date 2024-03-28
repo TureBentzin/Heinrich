@@ -60,8 +60,7 @@ public class DataManager {
         List<HTMLUtils.DataBlock> dataBlocks = HTMLUtils.extractDataBlocks(file);
         for (HTMLUtils.DataBlock dataBlock : dataBlocks) {
             logger.info("Topic: {}", dataBlock.getTopic());
-            logger.info(dataBlock.getNames().toString());
-            logger.info(dataBlock.getUrls().toString());
+            logger.info(dataBlock.getContent().toString());
         }
         return Set.of();
     }

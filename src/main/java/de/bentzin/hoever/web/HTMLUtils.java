@@ -31,12 +31,8 @@ public class HTMLUtils {
         while (matcher.find()) {
             String blockContent = matcher.group(1);
             List<Pair<String, String>> urlsAndNames = extractNamesAndUrls(blockContent);
-            List<String> urls = urlsAndNames.stream().map(Pair::getFirst).toList();
-            List<String> names = urlsAndNames.stream().map(Pair::getSecond).toList();
-            //List<String> urls = extractUrls(blockContent);
-            //List<String> names = extractNames(blockContent);
             String topic = extractTopic(blockContent);
-            DataBlock dataBlock = new DataBlock(urls, names, topic);
+            DataBlock dataBlock = new DataBlock(urlsAndNames, topic);
             dataBlocks.add(dataBlock);
         }
         return dataBlocks;
@@ -85,38 +81,41 @@ public class HTMLUtils {
         List<HTMLUtils.DataBlock> dataBlocks = HTMLUtils.extractDataBlocks(string);
         for (HTMLUtils.DataBlock dataBlock : dataBlocks) {
             logger.info("Topic: {}", dataBlock.getTopic());
-            logger.info(dataBlock.getNames().toString());
-            logger.info(dataBlock.getUrls().toString());
+            logger.info(dataBlock.getContent().toString());
         }
     }
 
     public static class DataBlock {
         @NotNull
-        private List<String> urls;
+        private final String topic;
         @NotNull
-        private List<String> names;
-        @NotNull
-        private String topic;
+        private List<Pair<String, String>> content;
 
-        public DataBlock(@NotNull List<String> urls, @NotNull List<String> names, @NotNull String topic) {
-            this.urls = urls;
-            this.names = names;
+        public DataBlock(@NotNull List<Pair<String, String>> content, @NotNull String topic) {
+            this.content = content;
             this.topic = topic;
         }
 
         @NotNull
-        public List<String> getUrls() {
-            return urls;
+        public List<Pair<String, String>> getContent() {
+            return content;
         }
 
-        @NotNull
-        public List<String> getNames() {
-            return names;
+        public void setContent(@NotNull List<Pair<String, String>> content) {
+            this.content = content;
         }
 
         @NotNull
         public String getTopic() {
             return topic;
+        }
+
+        @Override
+        public String toString() {
+            return "DataBlock{" +
+                    "topic='" + topic + '\'' +
+                    ", content=" + content +
+                    '}';
         }
     }
 }
