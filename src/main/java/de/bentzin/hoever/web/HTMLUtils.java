@@ -26,10 +26,10 @@ public class HTMLUtils {
 
     public static List<DataBlock> extractDataBlocks(@NotNull String html) {
         List<DataBlock> dataBlocks = new ArrayList<>();
-        Pattern pattern = Pattern.compile("<div class=\"largeText\">(.*?)</div>", Pattern.DOTALL);
+        Pattern pattern = Pattern.compile("<div class=\"(shortText|largeText)\">(.*?)</div>", Pattern.DOTALL);
         Matcher matcher = pattern.matcher(html);
         while (matcher.find()) {
-            String blockContent = matcher.group(1);
+            String blockContent = matcher.group(2);
             List<Pair<String, String>> urlsAndNames = extractNamesAndUrls(blockContent);
             String topic = extractTopic(blockContent);
             DataBlock dataBlock = new DataBlock(urlsAndNames, topic);
@@ -65,8 +65,8 @@ public class HTMLUtils {
     }
 
     public static void main(String[] args) throws IOException {
-
-        InputStream downstream = new URL("https://www.fh-aachen.de/menschen/hoever/lehrveranstaltungen/hoehere-mathematik-1/wochenplaene-2023/24-hoehere-mathematik-1").openStream();
+//testset: Mathe1 : https://www.fh-aachen.de/menschen/hoever/lehrveranstaltungen/hoehere-mathematik-1/wochenplaene-2023/24-hoehere-mathematik-1
+        InputStream downstream = new URL("https://www.fh-aachen.de/menschen/hoever/lehrveranstaltungen/hoehere-mathematik-2-fuer-informatik-und-wirtschaftsinformatik/wochenplaene-24-hoehere-mathematik-2-fuer-wirtschafts-informatik").openStream();
         BufferedReader reader1 = new BufferedReader(new InputStreamReader(downstream));
         String line;
         StringBuilder event_file = new StringBuilder();
