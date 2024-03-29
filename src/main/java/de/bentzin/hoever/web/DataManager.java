@@ -35,7 +35,9 @@ public class DataManager {
     @NotNull
     public static final Set<String> allowedHosts = Set.of(
             "https://www.hoever-downloads.fh-aachen.de",
-            "https://www.hm-kompakt.de/"
+            "https://www.hm-kompakt.de/",
+            "https://video.fh-aachen.de/",
+            "https://youtube.com/"
     );
 
     public DataManager() {
@@ -82,30 +84,35 @@ public class DataManager {
         int messagesSent = 0;
         Collection<Long> skippedChannels = new ArrayList<>();
         for (SendOrder order : sendOrder) {
-            if (DBChannel.collectionContains(channels, order.channel(), order.event())) {
-                TextChannel channel = Bot.getJda().getTextChannelById(order.channel());
-                if (channel == null) {
-                    if (!skippedChannels.contains(order.channel())) {
-                        logger.warn("Channel {} cant be found! Was it deleted?", order.channel());
-                        skippedChannels.add(order.channel());
+            try {
+                if (DBChannel.collectionContains(channels, order.channel(), order.event())) {
+                    TextChannel channel = Bot.getJda().getTextChannelById(order.channel());
+                    if (channel == null) {
+                        if (!skippedChannels.contains(order.channel())) {
+                            logger.warn("Channel {} cant be found! Was it deleted?", order.channel());
+                            skippedChannels.add(order.channel());
+                        }
+                        continue; //dont spam log
                     }
-                    continue; //dont spam log
-                }
-                MessageEmbed messageEmbed = buildMessage(order.url(), order.name(), order.topic());
-                MessageCreateAction createAction = channel.sendMessageEmbeds(messageEmbed);
-                //Message ++
-                {
+                    MessageEmbed messageEmbed = buildMessage(order.url(), order.name(), order.topic());
+                    MessageCreateAction createAction = channel.sendMessageEmbeds(messageEmbed);
+                    //Message ++
+                    {
 
-                }
+                    }
 
-                createAction.onSuccess(message -> {
-                    Bot.getDatabaseManager().reportMessage(order.channel(), order.url(), order.event(), message.getIdLong());
-                    logger.info("Sent message to channel {} for file ({}) {} ", order.channel(), order.name(), order.url());
-                }).queue();
-                messagesSent++;
-            } else {
-                logger.warn("Potential corrupted data! Skipping order with channel {} for event {}", order.channel(), order.event());
-                continue;
+                    createAction.onSuccess(message -> {
+                        Bot.getDatabaseManager().reportMessage(order.channel(), order.url(), order.event(), message.getIdLong());
+                        logger.info("Sent message to channel {} for file ({}) {} ", order.channel(), order.name(), order.url());
+                    }).queue();
+                    messagesSent++;
+                } else {
+                    logger.warn("Potential corrupted data! Skipping order with channel {} for event {}", order.channel(), order.event());
+                    continue;
+                }
+            } catch (Exception e) {
+                logger.error("Failed to send message to channel {} for file ({}) {} ", order.channel(), order.name(), order.url());
+                logger.error("Exception: ", e);
             }
         }
 
@@ -149,6 +156,10 @@ public class DataManager {
             } catch (IOException e) {
                 logger.warn("Failed to download video info from {}", url);
             }
+        }
+
+        if (url.startsWith("https://www.hm-kompakt.de/")) {
+            embedBuilder.setFooter("HM-Kompakt: " + fileName);
         }
 
         embedBuilder.setDescription(topic);

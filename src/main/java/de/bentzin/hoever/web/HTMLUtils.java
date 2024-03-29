@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static de.bentzin.hoever.web.DataManager.allowedHosts;
+
 /**
  * @author Ture Bentzin
  * @since 26-03-2024
@@ -46,6 +48,22 @@ public class HTMLUtils {
         Pattern pattern = Pattern.compile("<a[ ]*href=\"(https://.*?)\".*?>([A-ZÄ-Üä-üa-z0-9 .:-]*)</a>", Pattern.MULTILINE | Pattern.DOTALL);
         Matcher matcher = pattern.matcher(blockContent);
         while (matcher.find()) {
+            {
+                //checks if the url is allowed
+                String url = matcher.group(1);
+                boolean allowed = false;
+                for (String allowedHost : allowedHosts) {
+                    if (url.startsWith(allowedHost)) {
+                        allowed = true;
+                        break;
+                    }
+                }
+                if (!allowed) {
+                    logger.warn("URL not allowed: {}", url);
+                    continue;
+                }
+
+            }
             namesAndUrls.add(new Pair<>(matcher.group(1), matcher.group(2)));
         }
         return namesAndUrls;
