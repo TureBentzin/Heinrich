@@ -1,6 +1,7 @@
 package de.bentzin.hoever;
 
 import de.bentzin.hoever.command.*;
+import de.bentzin.hoever.publish.UpdateTask;
 import de.bentzin.hoever.web.DataManager;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
@@ -34,6 +35,7 @@ public class Bot {
 
     @NotNull
     public static final Logger logger = LoggerFactory.getLogger(Bot.class);
+    @NotNull
     public static final Logger logger_hoever = LoggerFactory.getLogger("Prof. Dr. rer. nat. Dr.-Ing. Georg Hoever ");
     /* Managers (populated here or before bot start) */
     @NotNull
@@ -52,6 +54,9 @@ public class Bot {
     @Nullable
     private static DataManager dataManager;
 
+    @Nullable
+    private static Thread updateThread;
+
     /**
      * Entrypoint of application
      *
@@ -60,67 +65,74 @@ public class Bot {
      *             [2] = -d (debug)
      */
     public static void main(String[] args) {
-        //https://www.slf4j.org/api/org/slf4j/simple/SimpleLogger.html
-        logger_hoever.info("Willkommen zur Hoeheren Mathematik!");
         String token = null;
         File config;
-        if (args.length > 2 && args[2].equals("-d")) {
-            debug = true;
-            logger.info("Debug mode enabled!");
-        }
-        if (args.length < 1 || args[0].isEmpty()) {
-            logger.error("Please provide token at args[0]!");
-            System.exit(UNRECOVERABLE_ERROR);
-        } else {
-            token = args[0];
-            logger.info("Token was loaded from argument!");
-        }
-        if (args.length < 2 || args[1].isEmpty()) {
-            logger.error("Please provide bot_config at args[1]!");
-            System.exit(UNRECOVERABLE_ERROR);
-        } else {
-            config = new File(args[1]);
-            if (!config.exists()) {
-                logger.error("{} does not exist!", config.getAbsolutePath());
-                createConfig(config);
-                logger.info("Please fill out the config file at {}. The application will shut down now!", config.getAbsolutePath());
+        GCommandListener gCommandListener;
+        try {
+            //https://www.slf4j.org/api/org/slf4j/simple/SimpleLogger.html
+            logger_hoever.info("Willkommen zur Hoeheren Mathematik!");
+
+            if (args.length > 2 && args[2].equals("-d")) {
+                debug = true;
+                logger.info("Debug mode enabled!");
+            }
+            if (args.length < 1 || args[0].isEmpty()) {
+                logger.error("Please provide token at args[0]!");
                 System.exit(UNRECOVERABLE_ERROR);
             } else {
-                //config exists
-                configObject = getGsonManager().fromJson(config, ConfigObject.class);
-                if (configObject == null) {
-                    logger.error("Could not load config file!");
+                token = args[0];
+                logger.info("Token was loaded from argument!");
+            }
+            if (args.length < 2 || args[1].isEmpty()) {
+                logger.error("Please provide bot_config at args[1]!");
+                System.exit(UNRECOVERABLE_ERROR);
+            } else {
+                config = new File(args[1]);
+                if (!config.exists()) {
+                    logger.error("{} does not exist!", config.getAbsolutePath());
+                    createConfig(config);
+                    logger.info("Please fill out the config file at {}. The application will shut down now!", config.getAbsolutePath());
                     System.exit(UNRECOVERABLE_ERROR);
                 } else {
-                    logger.info("Config file was loaded successfully!");
+                    //config exists
+                    configObject = getGsonManager().fromJson(config, ConfigObject.class);
+                    if (configObject == null) {
+                        logger.error("Could not load config file!");
+                        System.exit(UNRECOVERABLE_ERROR);
+                    } else {
+                        logger.info("Config file was loaded successfully!");
+                    }
                 }
             }
+
+            // continue bootstrap
+            databaseManager = new DatabaseManager(configObject.getSqlitePath());
+            logger.info("DatabaseManager was created successfully!");
+            {
+                //initial setup of the database
+                databaseManager.createTables();
+            }
+
+            dataManager = new DataManager();
+            logger.info("DataManager was created successfully!");
+
+            /* Commands */
+            gCommandListener = new GCommandListener();
+
+            SayCommand sayCommand = new SayCommand();
+            gCommandListener.register(sayCommand);
+            gCommandListener.register(new ExitCommand());
+            gCommandListener.register(new UpdateCommand());
+            if (debug) gCommandListener.register(new ConnectTestCommand());
+            gCommandListener.register(new SetChannelCommand());
+
+        } catch (Exception e) {
+            logger.error("Error while starting bot!", e);
+            System.exit(UNRECOVERABLE_ERROR); //skipping shutdown because it is not initialized
+            return;
         }
-
-        // continue bootstrap
-        databaseManager = new DatabaseManager(configObject.getSqlitePath());
-        logger.info("DatabaseManager was created successfully!");
-        {
-            //initial setup of the database
-            databaseManager.createTables();
-        }
-
-        dataManager = new DataManager();
-        logger.info("DataManager was created successfully!");
-
-        /* Commands */
-        GCommandListener gCommandListener = new GCommandListener();
-
-        SayCommand sayCommand = new SayCommand();
-        gCommandListener.register(sayCommand);
-        gCommandListener.register(new ExitCommand());
-        gCommandListener.register(new UpdateCommand());
-        if (debug) gCommandListener.register(new ConnectTestCommand());
-        gCommandListener.register(new SetChannelCommand());
-
-
         //JDA Startup
-        {
+        try {
             JDABuilder jdaBuilder = JDABuilder.createDefault(token);
             jdaBuilder.disableCache(CacheFlag.MEMBER_OVERRIDES, CacheFlag.VOICE_STATE);
             String initialActivity = "Höhere Mathematik";
@@ -137,7 +149,16 @@ public class Bot {
             jdaBuilder.addEventListeners(gCommandListener);
             jda = jdaBuilder.build();
             gCommandListener.updateJDA(jda);
+        } catch (Exception e) {
+            logger.error("Error while starting JDA! Restarting...", e);
+            System.exit(RESTART_ERROR);
         }
+
+        if (configObject.isWriteEnabled()) {
+            logger.info("Executing initial UpdateTask procedure!");
+            updateThread = UpdateTask.execute();
+        }
+
     }
 
     @NotNull
@@ -170,7 +191,7 @@ public class Bot {
         return databaseManager;
     }
 
-    @NotNull
+    @Nullable
     public static ConfigObject getConfig() {
         return configObject;
     }
@@ -204,6 +225,11 @@ public class Bot {
 
     public static void shutdown(int code) throws IllegalStateException {
         logger.info("Shutting down with exit code {} after session with length of {}", code, getSessionDurationString());
+        logger.info("Stopping UpdateThread!");
+        if (updateThread != null) {
+            updateThread.interrupt();
+        }
+        logger.info("Shutting down JDA!");
         jda.shutdown();
         System.exit(code);
         throw new IllegalStateException("JVM should be already exited!");

@@ -15,6 +15,8 @@ public class ConfigObject {
     @NotNull
     private List<Long> adminIds;
 
+    private boolean writeEnabled = true;
+
     @NotNull
     public static ConfigObject defaultConfig() {
         ConfigObject configObject = new ConfigObject();
@@ -39,5 +41,13 @@ public class ConfigObject {
 
     public void setAdminIds(@NotNull List<Long> adminIds) {
         this.adminIds = adminIds;
+    }
+
+    public boolean isWriteEnabled() {
+        return writeEnabled;
+    }
+
+    public void setWriteEnabled(boolean writeEnabled) {
+        this.writeEnabled = writeEnabled;
     }
 }
