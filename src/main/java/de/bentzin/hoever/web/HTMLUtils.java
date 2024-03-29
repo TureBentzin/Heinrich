@@ -29,8 +29,8 @@ public class HTMLUtils {
         while (matcher.find()) {
             String blockContent = matcher.group(3);
             String header = matcher.group(1);
-            logger.info("Header: {}", header);
-            logger.info("Block: {}", blockContent);
+            logger.debug("Header: {}", header);
+            logger.debug("Block: {}", blockContent);
             List<Pair<String, String>> urlsAndNames = extractNamesAndUrls(blockContent);
             String topic = matcher.group(1).replace("\n", "");
             DataBlock dataBlock = new DataBlock(urlsAndNames, topic);

@@ -27,31 +27,34 @@ public class UpdateTask implements Runnable {
 
     @Override
     public void run() {
-        logger.info("Running update task!");
-        if (Bot.getDataManager() != null) {
-            int update = Bot.getDataManager().update();
-            logger.info("Updated executed {} items affected.", update);
-            failedAttempts = 0;
-        } else {
-            logger.error("DataManager is null. Cannot update.");
-            failedAttempts++;
-        }
-        if (failedAttempts >= 3) {
-            logger.error("Failed to execute update procedure 3 times in a row. Restarting bot.");
-            logger.error("Restarting bot and updating the bot.");
-            Bot.shutdown(Bot.RESTART_UPDATE);
-        }
-        try {
-            Thread.sleep(10 * 60 * 1000);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-        //pick new random activity
-        try {
-            Bot.getJda().getPresence().setActivity(Activity.competing(Bot.getDatabaseManager().getRandomTopic()));
-        } catch (Exception e) {
-            logger.warn("Failed to set activity", e);
-            failedAttempts++;
+        while (true) {
+            logger.info("Running update task!");
+            if (Bot.getDataManager() != null) {
+                int update = Bot.getDataManager().update();
+                logger.info("Updated executed {} items affected.", update);
+                failedAttempts = 0;
+            } else {
+                logger.error("DataManager is null. Cannot update.");
+                failedAttempts++;
+            }
+            if (failedAttempts >= 3) {
+                logger.error("Failed to execute update procedure 3 times in a row. Restarting bot.");
+                logger.error("Restarting bot and updating the bot.");
+                Bot.shutdown(Bot.RESTART_UPDATE);
+            }
+            try {
+                Thread.sleep(10 * 60 * 1000);
+            } catch (InterruptedException e) {
+                logger.warn("Thread was interrupted while sleeping.");
+                logger.debug(e.getMessage(), e);
+            }
+            //pick new random activity
+            try {
+                Bot.getJda().getPresence().setActivity(Activity.competing(Bot.getDatabaseManager().getRandomTopic()));
+            } catch (Exception e) {
+                logger.warn("Failed to set activity", e);
+                failedAttempts++;
+            }
         }
     }
 }
