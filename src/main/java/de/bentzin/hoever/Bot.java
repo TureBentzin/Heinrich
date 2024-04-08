@@ -37,7 +37,7 @@ public class Bot {
     @NotNull
     public static final Logger logger = LoggerFactory.getLogger(Bot.class);
     @NotNull
-    public static final Logger logger_hoever = LoggerFactory.getLogger("Prof. Dr. rer. nat. Dr.-Ing. Georg Hoever ");
+    public static final Logger logger_hoever = LoggerFactory.getLogger("Prof. Dr. rer. nat. Dr.-Ing. Georg Hoever");
     /* Managers (populated here or before bot start) */
     @NotNull
     private static final GsonManager gsonManager = new GsonManager();
