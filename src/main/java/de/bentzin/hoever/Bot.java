@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.function.Function;
+import java.util.logging.Level;
 
 /**
  * @author Ture Bentzin
@@ -68,6 +69,11 @@ public class Bot {
      *             [2] = -d (debug)
      */
     public static void main(String[] args) {
+
+        java.util.logging.Logger root = java.util.logging.Logger.getLogger("");
+        root.setLevel(Level.FINER);
+        root.getHandlers()[0].setLevel(Level.FINER);
+
         String token = null;
         File config;
         GCommandListener gCommandListener;
