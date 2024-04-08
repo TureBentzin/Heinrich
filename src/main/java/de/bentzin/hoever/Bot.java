@@ -229,8 +229,22 @@ public class Bot {
         if (updateThread != null) {
             updateThread.interrupt();
         }
-        logger.info("Shutting down JDA!");
-        jda.shutdown();
+
+        if (jda != null) {
+            logger.info("Shutting down JDA!");
+            jda.shutdown();
+        } else {
+            logger.warn("JDA is null. Cannot shutdown JDA!");
+        }
+        try {
+            boolean timeout = jda.awaitShutdown(Duration.ofMinutes(1));
+            if(!timeout) {
+                logger.warn("JDA did not shutdown in time!");
+            }
+        } catch (InterruptedException e) {
+            logger.error("Error while waiting for JDA to shutdown!", e);
+        }
+
         System.exit(code);
         throw new IllegalStateException("JVM should be already exited!");
     }
