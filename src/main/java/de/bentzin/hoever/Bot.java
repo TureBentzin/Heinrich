@@ -261,7 +261,7 @@ public class Bot {
             jda.shutdownNow();
 
             try {
-                boolean timeout = jda.awaitShutdown(Duration.ofMinutes(1));
+                boolean timeout = jda.awaitShutdown(Duration.ofMinutes(5));
                 if (!timeout) {
                     logger.warn("JDA did not shutdown in time!");
                 }
@@ -273,7 +273,6 @@ public class Bot {
         } else {
             logger.warn("JDA is null. Cannot shutdown JDA!");
         }
-
 
         System.exit(code);
         throw new IllegalStateException("JVM should be already exited!");
