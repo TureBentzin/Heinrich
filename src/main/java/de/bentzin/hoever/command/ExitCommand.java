@@ -24,7 +24,7 @@ public class ExitCommand extends GCommand {
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
-        Bot.shutdown(code);
+        Bot.shutdownAsync(code);
     }
 
     @NotNull

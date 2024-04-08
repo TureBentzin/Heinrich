@@ -57,6 +57,9 @@ public class Bot {
     @Nullable
     private static Thread updateThread;
 
+    @Nullable
+    private static Integer shutdown = null;
+
     /**
      * Entrypoint of application
      *
@@ -159,6 +162,16 @@ public class Bot {
             updateThread = UpdateTask.execute();
         }
 
+        //await shutdown
+        while (shutdown == null) {
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                logger.error("Main thread was interrupted!", e);
+            }
+        }
+        shutdown(shutdown);
+
     }
 
     @NotNull
@@ -219,11 +232,24 @@ public class Bot {
         return TimeFormat.RELATIVE.format(session_start);
     }
 
+
+    public static void shutdownAsync() {
+        shutdown = NORMAL_EXIT;
+    }
+
+    public static void shutdownAsync(int code) {
+        shutdown = code;
+    }
+
     public static void shutdown() {
         shutdown(NORMAL_EXIT);
     }
 
     public static void shutdown(int code) throws IllegalStateException {
+        //check if called from main thread
+        if (!Thread.currentThread().getName().equals("main")) {
+            throw new IllegalStateException("Shutdown was not called from main thread!");
+        }
         logger.info("Shutting down with exit code {} after session with length of {}", code, getSessionDurationString());
         logger.info("Stopping UpdateThread!");
         if (updateThread != null) {
@@ -238,7 +264,7 @@ public class Bot {
         }
         try {
             boolean timeout = jda.awaitShutdown(Duration.ofMinutes(1));
-            if(!timeout) {
+            if (!timeout) {
                 logger.warn("JDA did not shutdown in time!");
             }
         } catch (InterruptedException e) {
