@@ -45,8 +45,9 @@ public class UpdateTask implements Runnable {
             try {
                 Thread.sleep(10 * 60 * 1000);
             } catch (InterruptedException e) {
-                logger.warn("Thread was interrupted while sleeping.");
+                logger.warn("Thread was interrupted while sleeping. Exiting thread.");
                 logger.debug(e.getMessage(), e);
+                return;
             }
             //pick new random activity
             try {
