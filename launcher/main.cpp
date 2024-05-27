@@ -126,6 +126,9 @@ int main(int argc, char **argv) {
     if (debug) std::cout << "Running command: " << command << std::endl;
     //run the command
     int exit_code = system(command.c_str());
+#ifdef __unix__
+    exit_code = exit_code >> 8;
+#endif
     std::cout << "The bot has exited with exit code: " << exit_code << std::endl;
     /*
      * Exit codes of the bot:

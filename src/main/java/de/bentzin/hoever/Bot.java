@@ -71,9 +71,6 @@ public class Bot {
     public static void main(String[] args) {
 
         java.util.logging.Logger root = java.util.logging.Logger.getLogger("");
-        root.setLevel(Level.FINER);
-        root.getHandlers()[0].setLevel(Level.FINER);
-
         String token = null;
         File config;
         GCommandListener gCommandListener;
@@ -83,6 +80,8 @@ public class Bot {
 
             if (args.length > 2 && args[2].equals("-d")) {
                 debug = true;
+                root.setLevel(Level.FINER);
+                root.getHandlers()[0].setLevel(Level.FINER);
                 logger.info("Debug mode enabled!");
             }
             if (args.length < 1 || args[0].isEmpty()) {
@@ -151,7 +150,7 @@ public class Bot {
                         initialActivity = getDatabaseManager().getRandomTopic();
                     }
                 } catch (Exception e) {
-                    logger.warn("Failed to get random topic from database! Using default activity!");
+                    logger.warn("Failed to get random topic from database! Using default activity! Blubb");
                 }
             }
             jdaBuilder.setBulkDeleteSplittingEnabled(false).setActivity(Activity.competing(initialActivity));
