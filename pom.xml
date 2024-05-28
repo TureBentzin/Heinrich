@@ -97,6 +97,9 @@
                                 <move file="${project.basedir}/test-env/${project.build.finalName}.jar"
                                       tofile="${project.basedir}/test-env/Hoever.jar"
                                       overwrite="true"/>
+                                <move file="${project.build.directory}/${project.build.finalName}.jar"
+                                      tofile="${project.build.directory}/Hoever.jar"
+                                      overwrite="true"/>
                             </target>
                         </configuration>
                     </execution>
