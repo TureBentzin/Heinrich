@@ -37,6 +37,7 @@ public class DataManager {
             "https://www.hoever-downloads.fh-aachen.de",
             "https://www.hm-kompakt.de/",
             "https://video.fh-aachen.de/",
+            "https://www.youtube.com/",
             "https://youtube.com/"
     );
 

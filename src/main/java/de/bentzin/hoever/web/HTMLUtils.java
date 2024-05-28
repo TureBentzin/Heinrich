@@ -1,5 +1,6 @@
 package de.bentzin.hoever.web;
 
+import de.bentzin.hoever.Bot;
 import kotlin.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -47,6 +48,7 @@ public class HTMLUtils {
         //"<a[ ]*href=\"https://(.*?)\".*?>([A-ZÄ-Üa-z0-9 .:-]*)</a>"gs
         Pattern pattern = Pattern.compile("<a[ ]*href=\"(https://.*?)\".*?>([A-ZÄ-Üä-üa-z0-9 .:-]*)</a>", Pattern.MULTILINE | Pattern.DOTALL);
         Matcher matcher = pattern.matcher(blockContent);
+        ArrayList<String> disallowedUrls = new ArrayList<>(); // for logging
         while (matcher.find()) {
             {
                 //checks if the url is allowed
@@ -59,6 +61,10 @@ public class HTMLUtils {
                     }
                 }
                 if (!allowed) {
+                    if(disallowedUrls.contains(url) && !Bot.debug){
+                        continue;
+                    }
+                    disallowedUrls.add(url);
                     logger.warn("URL not allowed: {}", url);
                     continue;
                 }
