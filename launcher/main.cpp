@@ -25,6 +25,11 @@ struct Config {
     bool bot_debug = false;
 };
 
+bool checkForCommand(std::string command) {
+    std::string command_string = "which " + command + " > /dev/null";
+    return !system(command_string.c_str());
+}
+
 int main(int argc, char **argv) {
 
     {
@@ -105,9 +110,100 @@ int main(int argc, char **argv) {
     //if updater is enabled, download the latest sucessful build from the git repo
     if (config.updater && enable_updater) {
         std::cout << "Updater is enabled, downloading latest build from: " << config.git_repo << std::endl;
-        std::cerr << "This feature is not yet implemented!" << std::endl;
-        //flushall();
+        std::string command = "git clone " + config.git_repo + " source";
+        if (debug) std::cout << "Running command: " << command << std::endl;
+        if (checkForCommand("git")) {
+            int exit_code = system(command.c_str());
+            if (exit_code != 0) {
+                std::cout
+                        << "Failed to download the latest build! Please make sure the git repo is correct and you are authorized to clone it!"
+                        << std::endl;
+                goto update_failed;
+            }
+            {
+                //extract commit hash
+                std::string commit_hash_command = "cd source && git rev-parse HEAD";
+                if (debug) std::cout << "Running command: " << commit_hash_command << std::endl;
+                FILE *commit_hash_file = popen(commit_hash_command.c_str(), "r");
+                if (!commit_hash_file) {
+                    std::cout << "Failed to extract commit hash!" << std::endl;
+                } else {
+                    char commit_hash[100];
+                    fgets(commit_hash, 100, commit_hash_file);
+                    std::cout << "Latest build downloaded! Commit hash: " << commit_hash << std::endl;
+                    pclose(commit_hash_file);
+                }
+                //cd back
+                std::string cd_back_command = "cd ..";
+                if (debug) std::cout << "Running command: " << cd_back_command << std::endl;
+                exit_code = system(cd_back_command.c_str());
+                if (exit_code != 0) {
+                    std::cout << "Failed to cd back??!" << std::endl;
+                    goto update_failed;
+                }
+            }
+            if (checkForCommand("mvn")) {
+                std::string build_command = "mvn -f source clean test install";
+                if (debug) std::cout << "Running command: " << build_command << std::endl;
+                exit_code = system(build_command.c_str());
+                if (exit_code != 0) {
+                    std::cout << "Failed to build the latest build! Please make sure the build is correct."
+                                 " Please open an issue if this error persists over more then 40h!" << std::endl;
+                    goto update_failed;
+                }
+                std::cout << "Build successful!" << std::endl;
+                {
+                    //backup the old jar file
+                    std::string backup_command = "mv " + config.jar + " " + config.jar + ".backup";
+                    if (debug) std::cout << "Running command: " << backup_command << std::endl;
+                    exit_code = system(backup_command.c_str());
+                    if (exit_code != 0) {
+                        std::cout << "Failed to backup the old jar file!" << std::endl;
+                        goto update_failed;
+                    }
+                }
+                std::string copy_command = "cp source/target/1Hoever-1.0-SNAPSHOT.jar " + config.jar;
+                if (debug) std::cout << "Running command: " << copy_command << std::endl;
+                exit_code = system(copy_command.c_str());
+                if (exit_code != 0) {
+                    std::cout << "Failed to copy the jar file!" << std::endl;
+                    std::cout << "Restoring backup..." << std::endl;
+                    std::string restore_command = "mv " + config.jar + ".backup " + config.jar;
+                    if (debug) std::cout << "Running command: " << restore_command << std::endl;
+                    exit_code = system(restore_command.c_str());
+                    if (exit_code != 0) {
+                        std::cout << "Failed to restore the backup!" << std::endl;
+                        std::cout << "Please restore the backup manually!" << std::endl;
+                    }
+                    goto update_failed;
+                }
+                std::cout << "Jar file copied successfully!" << std::endl;
+                std::cout << "Currently the launcher does not allow automatic updating of itself."
+                             " However the updater will try to build the newest version at source/launcher."
+                          << std::endl;
+                {
+                    //launcher build
+                    std::string build_command = "cmake -S source/launcher -B source/launcher/build";
+                    if (debug) std::cout << "Running command: " << build_command << std::endl;
+                    exit_code = system(build_command.c_str());
+                    if (exit_code != 0) {
+                        std::cout
+                                << "Failed to build the launcher! Is CMake installed correctly? Is your Toolchain working?"
+                                << std::endl;
+                        goto update_failed;
+                    }
+                }
+            } else {
+                std::cout << "Maven not found! Please make sure maven is installed!" << std::endl;
+                goto update_failed;
+            }
+        } else {
+            std::cout << "Git not found! Please make sure git is installed!" << std::endl;
+            goto update_failed;
+        }
     }
+    update_failed:
+
     //check if the jar file exists
     std::fstream jar_file(config.jar, std::ios::in);
     if (!config.jar.ends_with(".jar")) {
