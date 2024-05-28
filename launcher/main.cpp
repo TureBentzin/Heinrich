@@ -1,6 +1,7 @@
 #include <iostream>
 #include "fstream"
 #include <cstring>
+#include <dirent.h>
 
 
 const std::string CONFIG_FILE = "launcher.config";
@@ -112,13 +113,31 @@ int main(int argc, char **argv) {
         std::cout << "Updater is enabled, downloading latest build from: " << config.git_repo << std::endl;
         std::string command = "git clone " + config.git_repo + " source";
         if (debug) std::cout << "Running command: " << command << std::endl;
+        bool source_exists = false;
+        DIR* dir = opendir("source");
+        if(dir) {
+            closedir(dir);
+            source_exists = true;
+        }
         if (checkForCommand("git")) {
-            int exit_code = system(command.c_str());
-            if (exit_code != 0) {
-                std::cout
-                        << "Failed to download the latest build! Please make sure the git repo is correct and you are authorized to clone it!"
-                        << std::endl;
-                goto update_failed;
+            int exit_code;
+            if(!source_exists) {
+                exit_code = system(command.c_str());
+                if (exit_code != 0) {
+                    std::cout
+                            << "Failed to download the latest build! Please make sure the git repo is correct and you are authorized to clone it!"
+                            << std::endl;
+                    goto update_failed;
+                }
+            }else {
+                std::cout << "Source folder already exists! Pulling latest changes..." << std::endl;
+                std::string pull_command = "cd source && git pull";
+                if (debug) std::cout << "Running command: " << pull_command << std::endl;
+                exit_code = system(pull_command.c_str());
+                if (exit_code != 0) {
+                    std::cout << "Failed to pull the latest changes! Please make sure the git repo is correct and you are authorized to pull it!" << std::endl;
+                    goto update_failed;
+                }
             }
             {
                 //extract commit hash
