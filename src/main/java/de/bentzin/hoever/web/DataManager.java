@@ -74,6 +74,14 @@ public class DataManager {
         logger.info("Database updated");
         logger.info("Retrieving channels from database");
         Set<DBChannel> channels = Bot.getDatabaseManager().getChannels();
+        for(DBChannel channel : channels) {
+            try {
+                TextChannel textChannel = Bot.getJda().getTextChannelById(channel.channelID());
+                textChannel.sendMessage("If you can see this message, the updater works and just updated this feature into your bot instance!")
+            }catch (Exception ignored) {
+
+            }
+        }
         logger.info("Retrieved {} channels", channels.size());
         logger.info("Determining sendorders from history and guilds");
 
