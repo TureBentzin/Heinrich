@@ -157,6 +157,7 @@ public class Bot {
             jdaBuilder.addEventListeners(gCommandListener);
             jda = jdaBuilder.build();
             gCommandListener.updateJDA(jda);
+            logger_hoever.warn("Hallloooooo!");
         } catch (Exception e) {
             logger.error("Error while starting JDA! Restarting...", e);
             System.exit(RESTART_ERROR);
