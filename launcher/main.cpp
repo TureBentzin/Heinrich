@@ -195,7 +195,7 @@ int main(int argc, char **argv) {
                         goto update_failed;
                     }
                 }
-                std::string copy_command = "cp source/target/*.jar " + config.jar;
+                std::string copy_command = "cp source/target/Hoever.jar " + config.jar;
                 if (debug) std::cout << "Running command: " << copy_command << std::endl;
                 exit_code = system(copy_command.c_str());
                 if (exit_code != 0) {
