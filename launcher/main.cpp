@@ -5,6 +5,7 @@
 
 
 const std::string CONFIG_FILE = "launcher.config";
+#ifdef __unix__
 const std::string DEFAULT_CONFIG =
         "java_bin: java;\n"
         "jar: 1Hoever.jar;\n"
@@ -13,6 +14,16 @@ const std::string DEFAULT_CONFIG =
         "updater: 1;\n"
         "git_repo: https://github.com/TureBentzin/1Hoever.git;\n"
         "bot_debug: 0;\n";
+#else
+const std::string DEFAULT_CONFIG =
+        "java_bin: java;\n"
+        "jar: 1Hoever.jar;\n"
+        "token: enter_token_here;\n"
+        "bot_config: bot_config.json;\n"
+        "updater: 0;\n"
+        "git_repo: https://github.com/TureBentzin/1Hoever.git;\n"
+        "bot_debug: 0;\n";
+#endif
 
 bool debug = false;
 
@@ -110,7 +121,10 @@ int main(int argc, char **argv) {
     std::cout << "Configuration read successfully!" << std::endl;
     //if updater is enabled, download the latest sucessful build from the git repo
     if (config.updater && enable_updater) {
+
         std::cout << "Updater is enabled, downloading latest build from: " << config.git_repo << std::endl;
+        //if the source folder exists, delete it
+        std::fstream source_folder("source", std::ios::in);
         std::string command = "git clone " + config.git_repo + " source";
         if (debug) std::cout << "Running command: " << command << std::endl;
         bool source_exists = false;
