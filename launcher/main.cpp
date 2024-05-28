@@ -1,9 +1,11 @@
 #include <iostream>
 #include "fstream"
 #include <cstring>
+#include <dirent.h>
 
 
 const std::string CONFIG_FILE = "launcher.config";
+#ifdef __unix__
 const std::string DEFAULT_CONFIG =
         "java_bin: java;\n"
         "jar: 1Hoever.jar;\n"
@@ -12,6 +14,16 @@ const std::string DEFAULT_CONFIG =
         "updater: 1;\n"
         "git_repo: https://github.com/TureBentzin/1Hoever.git;\n"
         "bot_debug: 0;\n";
+#else
+const std::string DEFAULT_CONFIG =
+        "java_bin: java;\n"
+        "jar: 1Hoever.jar;\n"
+        "token: enter_token_here;\n"
+        "bot_config: bot_config.json;\n"
+        "updater: 0;\n"
+        "git_repo: https://github.com/TureBentzin/1Hoever.git;\n"
+        "bot_debug: 0;\n";
+#endif
 
 bool debug = false;
 
@@ -109,16 +121,39 @@ int main(int argc, char **argv) {
     std::cout << "Configuration read successfully!" << std::endl;
     //if updater is enabled, download the latest sucessful build from the git repo
     if (config.updater && enable_updater) {
+
         std::cout << "Updater is enabled, downloading latest build from: " << config.git_repo << std::endl;
+        //if the source folder exists, delete it
+        std::fstream source_folder("source", std::ios::in);
+
+        DIR *dir = opendir("source");
+        bool source_exists = false;
+        if (dir) {
+            /* Directory exists. */
+            source_exists = true;
+            closedir(dir);
+        }
         std::string command = "git clone " + config.git_repo + " source";
         if (debug) std::cout << "Running command: " << command << std::endl;
         if (checkForCommand("git")) {
-            int exit_code = system(command.c_str());
-            if (exit_code != 0) {
-                std::cout
-                        << "Failed to download the latest build! Please make sure the git repo is correct and you are authorized to clone it!"
-                        << std::endl;
-                goto update_failed;
+            if(!source_exists) {
+                int exit_code = system(command.c_str());
+                if (exit_code != 0) {
+                    std::cout
+                            << "Failed to download the latest build! Please make sure the git repo is correct and you are authorized to clone it!"
+                            << std::endl;
+                    goto update_failed;
+                }
+            }else {
+                std::cout << "Source folder already exists! Pulling latest changes..." << std::endl;
+                std::string pull_command = "cd source && git pull";
+                if (debug) std::cout << "Running command: " << pull_command << std::endl;
+                int exit_code = system(pull_command.c_str());
+                if (exit_code != 0) {
+                    std::cout << "Failed to pull the latest changes! Please make sure the git repo is correct and you are authorized to pull it!" << std::endl;
+                    goto update_failed;
+                }
+                
             }
             {
                 //extract commit hash
