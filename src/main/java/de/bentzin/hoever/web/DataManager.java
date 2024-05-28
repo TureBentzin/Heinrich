@@ -97,11 +97,6 @@ public class DataManager {
                     }
                     MessageEmbed messageEmbed = buildMessage(order.url(), order.name(), order.topic());
                     MessageCreateAction createAction = channel.sendMessageEmbeds(messageEmbed);
-                    //Message ++
-                    {
-
-                    }
-
                     createAction.onSuccess(message -> {
                         Bot.getDatabaseManager().reportMessage(order.channel(), order.url(), order.event(), message.getIdLong());
                         logger.info("Sent message to channel {} for file ({}) {} ", order.channel(), order.name(), order.url());
