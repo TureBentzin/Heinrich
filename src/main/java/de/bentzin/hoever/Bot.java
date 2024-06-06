@@ -150,7 +150,7 @@ public class Bot {
                         initialActivity = getDatabaseManager().getRandomTopic();
                     }
                 } catch (Exception e) {
-                    logger.warn("Failed to get random topic from database! Using default activity! Blubb");
+                    logger.warn("Failed to get random topic from database! Using default activity!");
                 }
             }
             jdaBuilder.setBulkDeleteSplittingEnabled(false).setActivity(Activity.competing(initialActivity));
