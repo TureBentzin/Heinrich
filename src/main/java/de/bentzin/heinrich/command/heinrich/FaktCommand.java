@@ -4,6 +4,7 @@ import de.bentzin.heinrich.Bot;
 import de.bentzin.heinrich.FaktsObject;
 import de.bentzin.heinrich.command.GCommand;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -45,7 +46,7 @@ public class FaktCommand extends GCommand {
 
             return;
         }
-        event.reply(cache.data.get(rand.nextInt(cache.data.size() - 1))).setEphemeral(true).queue();
+        event.reply(cache.data.get(rand.nextInt(cache.data.size() - 1))).setEphemeral(false).queue();
         fail = 0;
     }
 }

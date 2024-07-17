@@ -95,10 +95,10 @@
                         <configuration>
                             <target>
                                 <move file="${project.basedir}/test-env/${project.build.finalName}.jar"
-                                      tofile="${project.basedir}/test-env/Hoever.jar"
+                                      tofile="${project.basedir}/test-env/Heinrich.jar"
                                       overwrite="true"/>
                                 <move file="${project.build.directory}/${project.build.finalName}.jar"
-                                      tofile="${project.build.directory}/Hoever.jar"
+                                      tofile="${project.build.directory}/Heinrich.jar"
                                       overwrite="true"/>
                             </target>
                         </configuration>
@@ -121,7 +121,7 @@
         <dependency>
             <groupId>net.dv8tion</groupId>
             <artifactId>JDA</artifactId>
-            <version>5.0.0-beta.21</version>
+            <version>5.0.1</version>
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
