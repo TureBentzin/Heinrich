@@ -22,6 +22,8 @@ public class FaktCommand extends GCommand {
 
     @Nullable
     private FaktCache cache = null;
+    @NotNull
+    private Random rand = new Random();
 
     public FaktCommand() {
         super("fakt", "Erfahre einen Fakt von Heinrich");
@@ -33,7 +35,7 @@ public class FaktCommand extends GCommand {
             event.reply("This Command is currently not available").setEphemeral(true).queue();
             return;
         }
-        Random rand = new Random();
+
         try {
             if (cache == null || System.currentTimeMillis() - cache.timestamp > Bot.getConfig().getFaktCacheTTL()) {
                 List<String> fakts = Bot.getGsonManager().fromJson(new File(Bot.getConfig().getFaktsFile()), FaktsObject.class).getFakts();
