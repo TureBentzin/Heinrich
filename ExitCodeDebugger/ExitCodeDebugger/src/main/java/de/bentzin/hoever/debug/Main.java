@@ -1,4 +1,4 @@
-package de.bentzin.hoever.debug;
+package de.bentzin.heinrich.debug;
 
 /*
  * Exit codes handled by the launcher:
