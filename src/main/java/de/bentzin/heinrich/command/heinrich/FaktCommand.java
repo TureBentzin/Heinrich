@@ -46,7 +46,7 @@ public class FaktCommand extends GCommand {
 
             return;
         }
-        event.reply(cache.data.get(rand.nextInt(cache.data.size() - 1))).setEphemeral(false).queue();
+        event.reply(cache.data.get(rand.nextInt(cache.data.size()))).setEphemeral(false).queue();
         fail = 0;
     }
 }
