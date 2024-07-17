@@ -14,6 +14,7 @@ public class ConfigObject {
     private List<Long> adminIds;
     @NotNull
     private String faktsFile = "fakts.json";
+    private long faktCacheTTL = 1000 * 60 * 10; //10min
 
     private boolean writeEnabled = true;
 
@@ -22,6 +23,14 @@ public class ConfigObject {
         ConfigObject configObject = new ConfigObject();
         configObject.setAdminIds(List.of());
         return configObject;
+    }
+
+    public long getFaktCacheTTL() {
+        return faktCacheTTL;
+    }
+
+    public void setFaktCacheTTL(long faktCacheTTL) {
+        this.faktCacheTTL = faktCacheTTL;
     }
 
     @NotNull

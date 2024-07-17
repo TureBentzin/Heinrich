@@ -1,6 +1,7 @@
 package de.bentzin.heinrich;
 
 import de.bentzin.heinrich.command.*;
+import de.bentzin.heinrich.command.heinrich.FaktCommand;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
@@ -14,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.time.Duration;
+import java.util.List;
 import java.util.function.Function;
 import java.util.logging.Level;
 
@@ -106,12 +108,21 @@ public class Bot {
 
             logger.info("Loading Fakts...");
             File faktsFile = new File("fakts.json");
+            if (!faktsFile.exists()) {
+                logger.error("Fakts file does not exist! Creating...");
+                FaktsObject faktsObject = new FaktsObject();
+                faktsObject.setFakts(List.of("Variablen in Fakten sind allquantifiziert!",
+                        "Wenn Prolog deterministisch wäre, würde es die Welt beherrschen!"));
+                getGsonManager().toJson(faktsFile, faktsObject);
+                logger.info("Fakts file was created! Restarting...");
+                System.exit(RESTART_NO_UPDATE);
+            }
 
 
 
             /* Commands */
             gCommandListener = new GCommandListener();
-
+            gCommandListener.register(new FaktCommand());
             SayCommand sayCommand = new SayCommand();
             gCommandListener.register(sayCommand);
             gCommandListener.register(new ExitCommand());
