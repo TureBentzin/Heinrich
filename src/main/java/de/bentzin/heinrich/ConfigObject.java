@@ -1,4 +1,4 @@
-package de.bentzin.hoever;
+package de.bentzin.heinrich;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -11,27 +11,26 @@ import java.util.List;
 public class ConfigObject {
 
     @NotNull
-    private String sqlitePath;
-    @NotNull
     private List<Long> adminIds;
+    @NotNull
+    private String faktsFile = "fakts.json";
 
     private boolean writeEnabled = true;
 
     @NotNull
     public static ConfigObject defaultConfig() {
         ConfigObject configObject = new ConfigObject();
-        configObject.setSqlitePath("data.sqlite");
         configObject.setAdminIds(List.of());
         return configObject;
     }
 
     @NotNull
-    public String getSqlitePath() {
-        return sqlitePath;
+    public String getFaktsFile() {
+        return faktsFile;
     }
 
-    public void setSqlitePath(@NotNull String sqlitePath) {
-        this.sqlitePath = sqlitePath;
+    public void setFaktsFile(@NotNull String faktsFile) {
+        this.faktsFile = faktsFile;
     }
 
     @NotNull

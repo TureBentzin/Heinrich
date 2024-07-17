@@ -1,8 +1,6 @@
-package de.bentzin.hoever;
+package de.bentzin.heinrich;
 
-import de.bentzin.hoever.command.*;
-import de.bentzin.hoever.publish.UpdateTask;
-import de.bentzin.hoever.web.DataManager;
+import de.bentzin.heinrich.command.*;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
@@ -36,24 +34,17 @@ public class Bot {
 
     @NotNull
     public static final Logger logger = LoggerFactory.getLogger(Bot.class);
-    @NotNull
-    public static final Logger logger_hoever = LoggerFactory.getLogger("Prof. Dr. rer. nat. Dr.-Ing. Georg Hoever");
     /* Managers (populated here or before bot start) */
     @NotNull
     private static final GsonManager gsonManager = new GsonManager();
     private static final long session_start = System.currentTimeMillis();
     /* DEBUG */
     public static boolean debug = false;
-    @Nullable
-    private static DatabaseManager databaseManager;
     /* Objects populated on main */
     @Nullable
     private static JDA jda;
     @Nullable
     private static ConfigObject configObject;
-
-    @Nullable
-    private static DataManager dataManager;
 
     @Nullable
     private static Thread updateThread;
@@ -76,7 +67,6 @@ public class Bot {
         GCommandListener gCommandListener;
         try {
             //https://www.slf4j.org/api/org/slf4j/simple/SimpleLogger.html
-            logger_hoever.info("Willkommen zur Hoeheren Mathematik!");
 
             if (args.length > 2 && args[2].equals("-d")) {
                 debug = true;
@@ -113,16 +103,11 @@ public class Bot {
                 }
             }
 
-            // continue bootstrap
-            databaseManager = new DatabaseManager(configObject.getSqlitePath());
-            logger.info("DatabaseManager was created successfully!");
-            {
-                //initial setup of the database
-                databaseManager.createTables();
-            }
 
-            dataManager = new DataManager();
-            logger.info("DataManager was created successfully!");
+            logger.info("Loading Fakts...");
+            File faktsFile = new File("fakts.json");
+
+
 
             /* Commands */
             gCommandListener = new GCommandListener();
@@ -130,9 +115,7 @@ public class Bot {
             SayCommand sayCommand = new SayCommand();
             gCommandListener.register(sayCommand);
             gCommandListener.register(new ExitCommand());
-            gCommandListener.register(new UpdateCommand());
-            if (debug) gCommandListener.register(new ConnectTestCommand());
-            gCommandListener.register(new SetChannelCommand());
+
 
         } catch (Exception e) {
             logger.error("Error while starting bot!", e);
@@ -143,28 +126,14 @@ public class Bot {
         try {
             JDABuilder jdaBuilder = JDABuilder.createDefault(token);
             jdaBuilder.disableCache(CacheFlag.MEMBER_OVERRIDES, CacheFlag.VOICE_STATE);
-            String initialActivity = "Höhere Mathematik";
-            {
-                try {
-                    if (getDatabaseManager() != null) {
-                        initialActivity = getDatabaseManager().getRandomTopic();
-                    }
-                } catch (Exception e) {
-                    logger.warn("Failed to get random topic from database! Using default activity!");
-                }
-            }
-            jdaBuilder.setBulkDeleteSplittingEnabled(false).setActivity(Activity.competing(initialActivity));
+            String initialActivity = "Sehr Logisch!";
+            jdaBuilder.setBulkDeleteSplittingEnabled(false).setActivity(Activity.customStatus(initialActivity));
             jdaBuilder.addEventListeners(gCommandListener);
             jda = jdaBuilder.build();
             gCommandListener.updateJDA(jda);
         } catch (Exception e) {
             logger.error("Error while starting JDA! Restarting...", e);
             System.exit(RESTART_ERROR);
-        }
-
-        if (configObject.isWriteEnabled()) {
-            logger.info("Executing initial UpdateTask procedure!");
-            updateThread = UpdateTask.execute();
         }
 
         //await shutdown
@@ -202,11 +171,6 @@ public class Bot {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    @Nullable
-    public static DatabaseManager getDatabaseManager() {
-        return databaseManager;
     }
 
     @Nullable
@@ -300,11 +264,5 @@ public class Bot {
             }
         }
         return fallback;
-    }
-
-
-    @Nullable
-    public static DataManager getDataManager() {
-        return dataManager;
     }
 }

@@ -1,6 +1,6 @@
-package de.bentzin.hoever.command;
+package de.bentzin.heinrich.command;
 
-import de.bentzin.hoever.Bot;
+import de.bentzin.heinrich.Bot;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;

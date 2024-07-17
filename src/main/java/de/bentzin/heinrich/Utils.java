@@ -1,4 +1,4 @@
-package de.bentzin.hoever;
+package de.bentzin.heinrich;
 
 import org.jetbrains.annotations.NotNull;
 

@@ -1,4 +1,4 @@
-package de.bentzin.hoever;
+package de.bentzin.heinrich;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
